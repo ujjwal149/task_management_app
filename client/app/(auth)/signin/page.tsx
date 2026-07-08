@@ -1,27 +1,80 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import AuthCard from "@/components/ui/AuthCard";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
-export default function SignInPage(){
-    return(
-        <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
-            <AuthCard title="Sign In">
-                <form className="space-y-4">
-                    <Input 
-                        type="email"
-                        placeholder="Enter you email"
-                    />
+import {
+  signInSchema,
+  SignInFormData,
+} from "@/validations/auth.schema";
 
-                    <Input 
-                        type="password"
-                        placeholder="Enter your password"
-                    />
-                    
-                    <Button>
-                        Sign In
-                    </Button>
-                </form>
-            </AuthCard>
-        </div>
-    )
+import {signin} from "@/services/auth.service";
+
+export default function SignInPage() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignInFormData>({
+    resolver: zodResolver(signInSchema),
+  });
+
+  const onSubmit = async (data: SignInFormData) => {
+    try{
+      const response = await signin(data);
+
+      console.log(response);
+    }catch (error: any) {
+  console.log(error.response?.data);
+}
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
+      <AuthCard title="Sign In">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
+          {/* Email */}
+          <div>
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              {...register("email")}
+            />
+
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          {/* Password */}
+          <div>
+            <Input
+              type="password"
+              placeholder="Enter your password"
+              {...register("password")}
+            />
+
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          <Button type="submit">
+            Sign In
+          </Button>
+        </form>
+      </AuthCard>
+    </div>
+  );
 }
