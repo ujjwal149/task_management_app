@@ -13,8 +13,14 @@ import {
 } from "@/validations/auth.schema";
 
 import {signin} from "@/services/auth.service";
+import { useAuthStore } from "@/store/auth.store";
+
+import { useRouter } from "next/navigation";
 
 export default function SignInPage() {
+
+  const router = useRouter();
+  
   const {
     register,
     handleSubmit,
@@ -23,15 +29,20 @@ export default function SignInPage() {
     resolver: zodResolver(signInSchema),
   });
 
-  const onSubmit = async (data: SignInFormData) => {
-    try{
-      const response = await signin(data);
+const onSubmit = async (data: SignInFormData) => {
+  try {
+    const response = await signin(data);
 
-      console.log(response);
-    }catch (error: any) {
-  console.log(error.response?.data);
-}
-  };
+    useAuthStore.getState().setUser(response.user);
+
+    router.replace("/dashboard");
+    
+  } catch (error: any) {
+    console.log(error.response?.data);
+  }
+};
+
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
