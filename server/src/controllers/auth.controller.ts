@@ -37,9 +37,22 @@ export const signup = async(req:Request,res:Response) =>{
             },
         });
 
+        const token = generateToken(user.id);
+
+        res.cookie("token", token, {
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
         return res.status(201).json({
             message:"User created successfully",
-            user,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
         });
 
     }catch(error){
@@ -116,7 +129,11 @@ export const logout = (
     req:Request,
     res:Response,
 ) => {
-    res.clearCookie("token");
+    res.clearCookie("token",{
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+    });
 
     return res.status(200).json({
         message: "Logged out sucessfully",

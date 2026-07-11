@@ -13,13 +13,23 @@ import {
 } from "@/validations/auth.schema";
 
 import {signin} from "@/services/auth.service";
-import { useAuthStore } from "@/store/auth.store";
+
 
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth"
 
 export default function SignInPage() {
 
   const router = useRouter();
+  
+  const { user, loading , setUser } = useAuth();
+
+  useEffect(() => {
+    if(!loading && user){
+      router.replace("/dashboard");
+    }
+  },[loading,user,router]);
   
   const {
     register,
@@ -33,7 +43,7 @@ const onSubmit = async (data: SignInFormData) => {
   try {
     const response = await signin(data);
 
-    useAuthStore.getState().setUser(response.user);
+    setUser(response.user);
 
     router.replace("/dashboard");
     
@@ -42,6 +52,13 @@ const onSubmit = async (data: SignInFormData) => {
   }
 };
 
+if (loading) {
+  return null;
+}
+
+if (user) {
+  return null;
+}
 
 
   return (

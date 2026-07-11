@@ -15,22 +15,12 @@ export default function ProtectedRoute({
   const router = useRouter();
 
   const { user, loading } = useAuth();
-    console.log("ProtectedRoute");
-    console.log("Loading:", loading);
-    console.log("User:", user);
 
- useEffect(() => {
-  console.log("ProtectedRoute effect");
-  console.log("loading:", loading);
-  console.log("user:", user);
-
-  if (!loading && !user) {
-    console.log("🚨 Redirecting...");
-    router.replace("/signin");
-  } else {
-    console.log("✅ Allowed");
-  }
-}, [loading, user, router]);
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/signin");
+    }
+  }, [loading, user, router]);
 
   if (loading) {
     return (
