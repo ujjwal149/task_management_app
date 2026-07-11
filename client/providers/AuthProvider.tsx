@@ -9,26 +9,24 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  console.log("✅ AuthProvider Rendered");
+  
 
   const { setUser, setLoading } = useAuthStore();
 
   useEffect(() => {
-    console.log("✅ useEffect Executed");
+    
 
     const loadUser = async () => {
-      console.log("➡️ Calling /auth/me");
+      
 
       try {
         setLoading(true);
 
         const response = await me();
 
-        console.log("✅ Response:", response);
-
         setUser(response.user);
       } catch (error) {
-        console.log("❌ Error:", error);
+       
 
         setUser(null);
       } finally {
