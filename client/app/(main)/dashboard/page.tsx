@@ -1,42 +1,93 @@
-"use client";
+import StatCard from "@/components/dashboard/StatCard";
+import UpcomingDeadlines from "@/components/dashboard/UpcomingDeadlines";
+import RecentTasks from "@/components/dashboard/RecentTasks";
+import QuickActions from "@/components/dashboard/QuickActions";
+import HeroSection from "@/components/dashboard/HeroSection";
+import WeeklyActivity from "@/components/dashboard/WeeklyActivity";
+import ProductivityCard from "@/components/dashboard/ProductivityCard";
+import RecentActivity from "@/components/dashboard/RecentActivity";
+import TodaySchedule from "@/components/dashboard/TodaySchedule";
 
-import { useRouter } from "next/navigation";
+import PageTransition from "@/components/layout/PageTransition";
 
-import Button from "@/components/ui/Button";
-
-import { logout } from "@/services/auth.service";
-import { useAuth } from "@/hooks/useAuth";
+import Breadcrumbs from "@/components/layout/Breadcrumbs";
 
 export default function DashboardPage() {
-  const router = useRouter();
-
-  const { user, logout: clearAuth } = useAuth();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-
-      clearAuth();
-
-      router.replace("/signin");
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   return (
-    <div>
-      <h1 className="mb-2 text-3xl font-bold text-slate-800">
-        Dashboard
-      </h1>
+    <PageTransition>
+    <div className="space-y-8">
 
-      <p className="mb-8 text-slate-600">
-        Welcome, <strong>{user?.name}</strong>
-      </p>
+      <Breadcrumbs />
+      
+      {/* Header */}
 
-      <Button onClick={handleLogout}>
-        Logout
-      </Button>
+      <HeroSection />
+
+      {/* Statistics */}
+
+      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+
+        <StatCard
+          title="Total Tasks"
+          value={24}
+          color="text-blue-600"
+        />
+
+        <StatCard
+          title="Completed"
+          value={18}
+          color="text-green-600"
+        />
+
+        <StatCard
+          title="Pending"
+          value={5}
+          color="text-amber-500"
+        />
+
+        <StatCard
+          title="Overdue"
+          value={1}
+          color="text-red-600"
+        />
+        
+      </div>
+
+<div className="grid gap-6 lg:grid-cols-3">
+
+  {/* Left */}
+
+  <div className="space-y-6 lg:col-span-2">
+
+    <WeeklyActivity />
+
+    <div className="grid gap-6 lg:grid-cols-2">
+
+        <RecentTasks />
+
+        <RecentActivity />
+
     </div>
+
+  </div>
+
+  {/* Right */}
+
+  <div className="space-y-6">
+
+    <UpcomingDeadlines />
+
+    <TodaySchedule />
+
+    <ProductivityCard />
+
+    <QuickActions />
+
+  </div>
+
+</div>
+
+</div>
+</PageTransition> 
   );
 }

@@ -14,31 +14,22 @@ import {
 import SidebarItem from "./SidebarItem";
 
 import { useAuth } from "@/hooks/useAuth";
-import { logout } from "@/services/auth.service";
-import { useRouter } from "next/navigation";
+import { useLogout } from "@/hooks/useLogout";
 import { useUIStore } from "@/store/ui.store";
 
 export default function Sidebar() {
-  const router = useRouter();
 
-  const { user, logout: clearAuth } = useAuth();
+
+const { user } = useAuth();
 
   const {
     sidebarOpen,
     closeSidebar,
   } = useUIStore();
 
-  const handleLogout = async () => {
-    try {
-      await logout();
 
-      clearAuth();
+  const logout = useLogout();
 
-      router.replace("/signin");
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   return (
     <>
@@ -55,25 +46,27 @@ export default function Sidebar() {
 
       <aside
         className={`
-          fixed
-          left-0
-          top-0
-          z-50
-          flex
-          h-screen
-          w-64
-          flex-col
-          border-r
-          border-stone-200
-          bg-stone-50
-          transition-transform
-          duration-300
+z-50
+flex
+h-screen
+w-64
+shrink-0
+flex-col
+border-r
+border-stone-200
+bg-stone-50
+transition-transform
+duration-300
 
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+fixed
+left-0
+top-0
 
-          md:static
-          md:translate-x-0
-        `}
+${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+
+md:relative
+md:translate-x-0
+`}
       >
         {/* Logo */}
 
@@ -141,7 +134,7 @@ export default function Sidebar() {
           </div>
 
           <button
-            onClick={handleLogout}
+            onClick={async()=>{ await logout()}}
             className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-stone-700 transition hover:bg-red-50 hover:text-red-600"
           >
             <LogOut size={20} />

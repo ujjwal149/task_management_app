@@ -5,6 +5,8 @@ import { Bell, Menu, Plus, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUIStore } from "@/store/ui.store";
 
+import UserDropdown from "./UserDropdown";
+
 export default function Navbar() {
   const { user } = useAuth();
 
@@ -67,27 +69,7 @@ export default function Navbar() {
 
         {/* Avatar */}
 
-        <div className="flex items-center gap-3">
-
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-
-            {user?.name?.charAt(0).toUpperCase()}
-
-          </div>
-
-          <div className="hidden md:block">
-
-            <p className="text-sm font-semibold text-stone-900">
-              {user?.name}
-            </p>
-
-            <p className="text-xs text-stone-500">
-              {user?.role}
-            </p>
-
-          </div>
-
-        </div>
+        <UserDropdown />
 
       </div>
 
