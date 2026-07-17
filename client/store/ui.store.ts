@@ -17,6 +17,18 @@ type UIState = {
   openEditTaskModal: (task: Task) => void;
 
   closeTaskModal: () => void;
+
+  deleteTaskModalOpen: boolean;
+
+  selectedDeleteTask?: Task;
+
+  openDeleteTaskModal: (task: Task) => void;
+
+  closeDeleteTaskModal: () => void;
+
+
+
+
 };
 
 export const useUIStore = create<UIState>((set) => ({
@@ -37,25 +49,40 @@ export const useUIStore = create<UIState>((set) => ({
       sidebarOpen: !state.sidebarOpen,
     })),
 
-    taskModalOpen: false,
+  taskModalOpen: false,
 
-selectedTask: undefined,
+  selectedTask: undefined,
 
-openCreateTaskModal: () =>
-  set({
-    taskModalOpen: true,
-    selectedTask: undefined,
-  }),
+  openCreateTaskModal: () =>
+    set({
+      taskModalOpen: true,
+      selectedTask: undefined,
+    }),
 
-openEditTaskModal: (task) =>
-  set({
-    taskModalOpen: true,
-    selectedTask: task,
-  }),
+  openEditTaskModal: (task) =>
+    set({
+      taskModalOpen: true,
+      selectedTask: task,
+    }),
 
-closeTaskModal: () =>
-  set({
-    taskModalOpen: false,
-    selectedTask: undefined,
-  }),
+  closeTaskModal: () =>
+    set({
+      taskModalOpen: false,
+      selectedTask: undefined,
+    }),
+  
+      deleteTaskModalOpen: false,
+  
+      selectedDeleteTask: undefined,
+  openDeleteTaskModal: (task) =>
+    set({
+      deleteTaskModalOpen: true,
+      selectedDeleteTask: task,
+    }),
+  
+  closeDeleteTaskModal: () =>
+    set({
+      deleteTaskModalOpen: false,
+      selectedDeleteTask: undefined,
+    }),
 }));

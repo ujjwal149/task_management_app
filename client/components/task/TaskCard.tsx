@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Pencil } from "lucide-react";
+import { CalendarDays, Pencil, Trash2} from "lucide-react";
 
 import { Task } from "@/types/task.types";
 import { useUIStore } from "@/store/ui.store";
@@ -13,7 +13,7 @@ export default function TaskCard({
   task,
 }: Props) {
 
-  const { openEditTaskModal } = useUIStore();
+  const { openEditTaskModal,openDeleteTaskModal } = useUIStore();
 
   return (
     <div
@@ -50,6 +50,15 @@ export default function TaskCard({
             title="Edit Task"
           >
             <Pencil size={18} />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => openDeleteTaskModal(task)}
+            className="rounded-lg p-2 text-stone-500 transition hover:bg-red-100 hover:text-red-600"
+            title="Delete Task"
+          >
+            <Trash2 size={18} />
           </button>
 
         </div>
