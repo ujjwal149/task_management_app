@@ -29,7 +29,7 @@ const schedule = [
 
 export default function TodaySchedule() {
   return (
-     <div className="rounded-2xl border border-stone-200 bg-white shadow-sm p-6 
+    <div className="rounded-2xl border border-stone-200 bg-white shadow-sm p-6 
                     transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ">
 
       <h2 className="mb-6 text-lg font-semibold text-stone-900">

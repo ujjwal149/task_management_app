@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  ChevronDown,
-  LogOut,
-  Settings,
-  User,
-} from "lucide-react";
+import {ChevronDown,LogOut,Settings,User,} from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useLogout } from "@/hooks/useLogout";

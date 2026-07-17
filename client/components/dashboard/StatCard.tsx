@@ -3,7 +3,7 @@ type StatCardProps = {
   value: number;
   color: string;
 };
-
+ 
 export default function StatCard({
   title,
   value,

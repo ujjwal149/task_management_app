@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -12,25 +15,20 @@ import {
   SignInFormData,
 } from "@/validations/auth.schema";
 
-import {signin} from "@/services/auth.service";
-
-
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth"
+import { signin } from "@/services/auth.service";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SignInPage() {
-
   const router = useRouter();
-  
-  const { user, loading , setUser } = useAuth();
+
+  const { user, loading, setUser } = useAuth();
 
   useEffect(() => {
-    if(!loading && user){
+    if (!loading && user) {
       router.replace("/dashboard");
     }
-  },[loading,user,router]);
-  
+  }, [loading, user, router]);
+
   const {
     register,
     handleSubmit,
@@ -39,70 +37,122 @@ export default function SignInPage() {
     resolver: zodResolver(signInSchema),
   });
 
-const onSubmit = async (data: SignInFormData) => {
-  try {
-    const response = await signin(data);
+  const onSubmit = async (data: SignInFormData) => {
+    try {
+      const response = await signin(data);
 
-    setUser(response.user);
+      setUser(response.user);
 
-    router.replace("/dashboard");
-    
-  } catch (error: any) {
-    console.log(error.response?.data);
+      router.replace("/dashboard");
+    } catch (error: any) {
+      console.log(error.response?.data);
+    }
+  };
+
+  if (loading || user) {
+    return null;
   }
-};
-
-if (loading) {
-  return null;
-}
-
-if (user) {
-  return null;
-}
-
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
-      <AuthCard title="Sign In">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-4"
-        >
-          {/* Email */}
-          <div>
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              {...register("email")}
-            />
+    <div className="flex min-h-screen items-center justify-center bg-stone-100 px-4 py-8">
 
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.email.message}
-              </p>
-            )}
+      <div className="w-full max-w-md">
+
+        {/* Logo */}
+
+        <div className="mb-8 text-center">
+
+          <h1 className="text-4xl font-bold text-blue-600">
+            TaskFlow
+          </h1>
+
+          <p className="mt-2 text-sm text-stone-500">
+            Welcome back! Sign in to continue.
+          </p>
+
+        </div>
+
+        <AuthCard title="Sign In">
+
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-5"
+          >
+
+            {/* Email */}
+
+            <div>
+
+              <label className="mb-2 block text-sm font-medium text-stone-700">
+                Email
+              </label>
+
+              <Input
+                type="email"
+                placeholder="john@example.com"
+                {...register("email")}
+              />
+
+              {errors.email && (
+                <p className="mt-2 text-sm text-red-500">
+                  {errors.email.message}
+                </p>
+              )}
+
+            </div>
+
+            {/* Password */}
+
+            <div>
+
+              <label className="mb-2 block text-sm font-medium text-stone-700">
+                Password
+              </label>
+
+              <Input
+                type="password"
+                placeholder="••••••••"
+                {...register("password")}
+              />
+
+              {errors.password && (
+                <p className="mt-2 text-sm text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
+
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full cursor-pointer"
+            >
+              Sign In
+            </Button>
+
+          </form>
+
+          <div className="mt-6 border-t border-stone-200 pt-5 text-center">
+
+            <p className="text-sm text-stone-500">
+
+              Don't have an account?{" "}
+
+              <button
+                onClick={() => router.push("/signup")}
+                className="font-semibold text-blue-600 transition hover:text-blue-700"
+              >
+                Sign Up
+              </button>
+
+            </p>
+
           </div>
 
-          {/* Password */}
-          <div>
-            <Input
-              type="password"
-              placeholder="Enter your password"
-              {...register("password")}
-            />
+        </AuthCard>
 
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+      </div>
 
-          <Button type="submit">
-            Sign In
-          </Button>
-        </form>
-      </AuthCard>
     </div>
   );
 }

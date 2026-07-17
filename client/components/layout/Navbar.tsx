@@ -8,18 +8,18 @@ import { useUIStore } from "@/store/ui.store";
 import UserDropdown from "./UserDropdown";
 
 export default function Navbar() {
-  const { user } = useAuth();
 
-  const { toggleSidebar } = useUIStore();
+  const {
+    toggleSidebar,
+    openCreateTaskModal ,
+  } = useUIStore();
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-stone-200 bg-white px-4 md:px-8">
 
-      {/* Left Section */}
+      {/* Left */}
 
       <div className="flex items-center gap-4">
-
-        {/* Mobile Hamburger */}
 
         <button
           onClick={toggleSidebar}
@@ -27,8 +27,6 @@ export default function Navbar() {
         >
           <Menu size={22} />
         </button>
-
-        {/* Search */}
 
         <div className="relative hidden md:block md:w-96">
 
@@ -47,27 +45,21 @@ export default function Navbar() {
 
       </div>
 
-      {/* Right Section */}
+      {/* Right */}
 
       <div className="flex items-center gap-3 md:gap-5">
-
-        {/* Notification */}
 
         <button className="rounded-xl p-2 text-stone-600 transition hover:bg-stone-100">
           <Bell size={20} />
         </button>
 
-        {/* New Task */}
-
-        <button className="hidden items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 md:flex">
-
+        <button
+          onClick={openCreateTaskModal}
+          className="hidden items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 md:flex"
+        >
           <Plus size={18} />
-
           New Task
-
         </button>
-
-        {/* Avatar */}
 
         <UserDropdown />
 

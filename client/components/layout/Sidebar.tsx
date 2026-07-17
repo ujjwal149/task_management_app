@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  LayoutDashboard,
-  CheckSquare,
-  FolderKanban,
-  Calendar,
-  Users,
-  Settings,
-  LogOut,
-  X,
-} from "lucide-react";
+import {LayoutDashboard,CheckSquare,FolderKanban,Calendar,Users,Settings,LogOut,X} from "lucide-react";
 
 import SidebarItem from "./SidebarItem";
 
@@ -45,32 +36,16 @@ const { user } = useAuth();
       {/* Sidebar */}
 
       <aside
-        className={`
-z-50
-flex
-h-screen
-w-64
-shrink-0
-flex-col
-border-r
-border-stone-200
-bg-stone-50
-transition-transform
-duration-300
-
-fixed
-left-0
-top-0
-
-${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-
-md:relative
-md:translate-x-0
-`}
+        className={`z-50 flex h-screen w-64 shrink-0 flex-col border-r border-stone-200 bg-stone-50
+                   transition-transform duration-300 fixed left-0 top-0
+                   ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+                    md:relative
+                    md:translate-x-0
+                    `}
       >
         {/* Logo */}
 
-        <div className="flex items-center justify-between border-b border-stone-200 p-6">
+        <div className="flex items-center justify-between border-b border-stone-200 p-4">
 
           <h1 className="text-2xl font-bold text-blue-600">
             TaskFlow

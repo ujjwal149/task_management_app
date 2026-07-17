@@ -11,7 +11,10 @@ export const createTaskSchema = z.object({
 
     dueDate: z
         .string()
-        .datetime()
+        .optional(),
+
+    priority: z
+        .enum(["LOW", "MEDIUM", "HIGH"])
         .optional(),
 });
 

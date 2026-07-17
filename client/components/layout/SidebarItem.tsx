@@ -16,6 +16,7 @@ export default function SidebarItem({
   icon: Icon,
   children,
 }: SidebarItemProps) {
+  
   const pathname = usePathname();
   
   const { closeSidebar} = useUIStore();

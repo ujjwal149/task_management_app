@@ -51,7 +51,7 @@ export default function SignUpPage(){
   }
 
   return(
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-stone-100 px-4 py-8">
       <AuthCard title="Sign Up">
         <form
         onSubmit={handleSubmit(onSubmit)}
@@ -108,6 +108,22 @@ export default function SignUpPage(){
             Sign Up
           </Button>
         </form>
+        <div className="mt-6 border-t border-stone-200 pt-5 text-center">
+
+            <p className="text-sm text-stone-500">
+
+              Already have an account?{" "}
+
+              <button
+                onClick={() => router.push("/signin")}
+                className="font-semibold text-blue-600 transition hover:text-blue-700"
+              >
+                Sign In
+              </button>
+
+            </p>
+
+          </div>
       </AuthCard>
     </div>
   )
