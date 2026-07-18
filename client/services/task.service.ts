@@ -4,12 +4,18 @@ import { CreateTaskInput } from "@/validations/task.schema";
 
 
 //Get All Task
-export const getMyTasks = async () => {
+export const getMyTasks = async (
+  page = 1,
+  limit = 9
+) => {
+
   const response =
-    await api.get<GetTasksResponse>("/tasks");
+    await api.get<GetTasksResponse>(
+      `/tasks?page=${page}&limit=${limit}`
+    );
 
   return response.data;
-};
+};;
 
 
 //Create New Task

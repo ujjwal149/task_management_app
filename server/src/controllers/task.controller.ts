@@ -54,19 +54,38 @@ export const getMyTasks = async (
   try {
     const userId = req.user!.userId;
 
-    const tasks = await prisma.task.findMany({
-      where: {
-        creatorId: userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 9;
+
+    const skip = (page - 1) * limit;
+
+    const [tasks, total] = await Promise.all([
+      prisma.task.findMany({
+        where: {
+          creatorId: userId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip,
+        take: limit,
+      }),
+
+      prisma.task.count({
+        where: {
+          creatorId: userId,
+        },
+      }),
+    ]);
 
     return res.status(200).json({
-      message: "Tasks fetched successfully.",
       tasks,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
     });
+
   } catch (error) {
     console.error(error);
 

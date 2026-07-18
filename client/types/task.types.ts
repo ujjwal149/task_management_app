@@ -26,7 +26,14 @@ export interface Task{
 
 }
 
-export interface GetTasksResponse {
-  message: string;
+export type GetTasksResponse = {
   tasks: Task[];
-}
+
+  page: number;
+
+  limit: number;
+
+  total: number;
+
+  totalPages: number;
+};

@@ -101,7 +101,9 @@ import toast from "react-hot-toast";
       const response =
         await createTask(data);
 
-      addTask(response.task);
+      await createTask(data);
+
+      await useTaskStore.getState().fetchTasks();
 
       toast.success("Task created");
 

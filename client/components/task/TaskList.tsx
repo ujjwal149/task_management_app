@@ -8,15 +8,26 @@ import TaskCard from "./TaskCard";
 export default function TaskList() {
 
   const {
-    tasks,
-    loading,
-    fetchTasks,
-    searchQuery,
+
+  tasks,
+
+  loading,
+
+  fetchTasks,
+
+  page,
+
+  totalPages,
+
+  setPage,
+
+  searchQuery,
+
   } = useTasks();
 
   useEffect(() => {
     fetchTasks();
-  }, [fetchTasks]);
+  }, [page,fetchTasks]);
 
   if (loading) {
   return (
@@ -50,15 +61,41 @@ export default function TaskList() {
   }
 
   return (
-    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+    <>
+  <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
 
-      {filteredTasks.map((task) => (
-        <TaskCard
-          key={task.id}
-          task={task}
-        />
-      ))}
+    {filteredTasks.map((task) => (
+      <TaskCard
+        key={task.id}
+        task={task}
+      />
+    ))}
 
-    </div>
+  </div>
+
+  <div className="mt-8 flex items-center justify-center gap-4">
+
+    <button
+      disabled={page === 1}
+      onClick={() => setPage(page - 1)}
+      className="rounded-lg border px-4 py-2 disabled:opacity-50"
+    >
+      Previous
+    </button>
+
+    <span className="font-medium">
+      Page {page} of {totalPages}
+    </span>
+
+    <button
+      disabled={page === totalPages}
+      onClick={() => setPage(page + 1)}
+      className="rounded-lg border px-4 py-2 disabled:opacity-50"
+    >
+      Next
+    </button>
+
+  </div>
+</>
   );
-}``
+}
