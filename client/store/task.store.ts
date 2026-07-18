@@ -13,6 +13,10 @@ type TaskStore = {
 
   loading: boolean;
 
+  searchQuery: string;
+
+  setSearchQuery: (query: string) => void;  
+
   fetchTasks: () => Promise<void>;
 
   setTasks: (tasks: Task[]) => void;
@@ -31,6 +35,13 @@ export const useTaskStore = create<TaskStore>((set) => ({
   tasks: [],
 
   loading: false,
+
+  searchQuery: "",
+
+  setSearchQuery: (query) =>
+    set({
+      searchQuery: query,
+    }),
 
   fetchTasks: async () => {
 
@@ -90,6 +101,7 @@ export const useTaskStore = create<TaskStore>((set) => ({
     set({
       tasks: [],
       loading: false,
+      searchQuery: "",
     }),
 
 }));

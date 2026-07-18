@@ -5,14 +5,32 @@ import { Bell, Menu, Plus, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUIStore } from "@/store/ui.store";
 
+import { useEffect,useState } from "react";
+
+import { useTaskStore } from "@/store/task.store";
+
 import UserDropdown from "./UserDropdown";
 
 export default function Navbar() {
 
   const {
-    toggleSidebar,
-    openCreateTaskModal ,
+  toggleSidebar,
+  openCreateTaskModal,
   } = useUIStore();
+
+  const {
+    setSearchQuery,
+  } = useTaskStore();
+
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(search);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search, setSearchQuery]);
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-stone-200 bg-white px-4 md:px-8">
@@ -37,7 +55,9 @@ export default function Navbar() {
 
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Search tasks..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-stone-200 bg-stone-50 py-2 pl-10 pr-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
           />
 
