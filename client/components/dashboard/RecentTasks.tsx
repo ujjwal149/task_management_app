@@ -1,64 +1,73 @@
-type Task = {
-  id: number;
-  title: string;
-  status: "Completed" | "Pending" | "In Progress";
-};
+"use client";
 
-const tasks: Task[] = [
-  {
-    id: 1,
-    title: "Design Dashboard UI",
-    status: "Completed",
-  },
-  {
-    id: 2,
-    title: "Build Authentication",
-    status: "In Progress",
-  },
-  {
-    id: 3,
-    title: "Setup Prisma",
-    status: "Pending",
-  },
-];
+import { useTasks } from "@/hooks/useTasks";
 
 export default function RecentTasks() {
-  return (
-     <div className="rounded-2xl border border-stone-200 bg-white shadow-sm p-6 
-                    transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ">
+  const { tasks } = useTasks();
 
+  const recentTasks = [...tasks]
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime()
+    )
+    .slice(0, 5);
+
+  return (
+    <div
+      className="
+        rounded-2xl
+        border
+        border-stone-200
+        bg-white
+        shadow-sm
+        p-6
+        transition-all
+        duration-300
+        hover:-translate-y-1
+        hover:shadow-lg
+      "
+    >
       <h2 className="mb-5 text-lg font-semibold text-stone-900">
         Recent Tasks
       </h2>
 
       <div className="space-y-4">
 
-        {tasks.map((task) => (
-          <div
-            key={task.id}
-            className="flex items-center justify-between rounded-xl border border-stone-100 p-4"
-          >
-            <span className="font-medium text-stone-700">
-              {task.title}
-            </span>
+        {recentTasks.length === 0 ? (
 
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-semibold
-              ${
-                task.status === "Completed"
-                  ? "bg-green-100 text-green-700"
-                  : task.status === "Pending"
-                  ? "bg-red-100 text-red-700"
-                  : "bg-amber-100 text-amber-700"
-              }`}
+          <p className="text-sm text-stone-500">
+            No recent tasks.
+          </p>
+
+        ) : (
+
+          recentTasks.map((task) => (
+            <div
+              key={task.id}
+              className="flex items-center justify-between rounded-xl border border-stone-100 p-4"
             >
-              {task.status}
-            </span>
-          </div>
-        ))}
+              <span className="font-medium text-stone-700">
+                {task.title}
+              </span>
+
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  task.status === "DONE"
+                    ? "bg-green-100 text-green-700"
+                    : task.status === "TODO"
+                    ? "bg-stone-100 text-stone-700"
+                    : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                {task.status.replace("_", " ")}
+              </span>
+            </div>
+          ))
+
+        )}
 
       </div>
-
     </div>
   );
 }

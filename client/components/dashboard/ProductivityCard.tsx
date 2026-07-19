@@ -7,22 +7,38 @@ import {
   buildStyles,
 } from "react-circular-progressbar";
 
-export default function ProductivityCard() {
-  const completed = 18;
-  const total = 24;
+import { useDashboard } from "@/hooks/useDashboard";
 
-  const percentage = Math.round((completed / total) * 100);
+export default function ProductivityCard() {
+  const { overview } = useDashboard();
+
+  const completed = overview?.completed ?? 0;
+
+  const total = overview?.totalTasks ?? 0;
+
+  const percentage =
+    overview?.completionRate ?? 0;
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white shadow-sm p-6 
-                    transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ">
-
+    <div
+      className="
+        rounded-2xl
+        border
+        border-stone-200
+        bg-white
+        shadow-sm
+        p-6
+        transition-all
+        duration-300
+        hover:-translate-y-1
+        hover:shadow-lg
+      "
+    >
       <h2 className="mb-6 text-lg font-semibold text-stone-900">
         Productivity
       </h2>
 
       <div className="mx-auto h-40 w-40">
-
         <CircularProgressbar
           value={percentage}
           text={`${percentage}%`}
@@ -32,11 +48,9 @@ export default function ProductivityCard() {
             trailColor: "#E7E5E4",
           })}
         />
-
       </div>
 
       <div className="mt-6 text-center">
-
         <p className="text-2xl font-bold text-stone-900">
           {completed} / {total}
         </p>
@@ -44,17 +58,13 @@ export default function ProductivityCard() {
         <p className="mt-1 text-sm text-stone-500">
           Tasks Completed
         </p>
-
       </div>
 
       <div className="mt-6 rounded-xl bg-blue-50 p-4">
-
         <p className="text-center text-sm font-medium text-blue-700">
           Great work! Keep the momentum going 🚀
         </p>
-
       </div>
-
     </div>
   );
 }

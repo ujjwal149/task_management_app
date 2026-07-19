@@ -1,34 +1,36 @@
+"use client";
+
 import { CalendarClock } from "lucide-react";
 
-type Deadline = {
-  id: number;
-  title: string;
-  date: string;
-};
-
-const deadlines: Deadline[] = [
-  {
-    id: 1,
-    title: "Submit Project Proposal",
-    date: "Tomorrow",
-  },
-  {
-    id: 2,
-    title: "Sprint Review Meeting",
-    date: "18 Jul",
-  },
-  {
-    id: 3,
-    title: "Deploy Version 1.0",
-    date: "24 Jul",
-  },
-];
+import { useTasks } from "@/hooks/useTasks";
 
 export default function UpcomingDeadlines() {
-  return (
-     <div className="rounded-2xl border border-stone-200 bg-white shadow-sm p-6 
-                    transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ">
+  const { tasks } = useTasks();
 
+  const upcomingTasks = [...tasks]
+    .filter((task) => task.dueDate)
+    .sort(
+      (a, b) =>
+        new Date(a.dueDate!).getTime() -
+        new Date(b.dueDate!).getTime()
+    )
+    .slice(0, 3);
+
+  return (
+    <div
+      className="
+        rounded-2xl
+        border
+        border-stone-200
+        bg-white
+        shadow-sm
+        p-6
+        transition-all
+        duration-300
+        hover:-translate-y-1
+        hover:shadow-lg
+      "
+    >
       <div className="mb-5 flex items-center gap-2">
 
         <CalendarClock
@@ -44,22 +46,34 @@ export default function UpcomingDeadlines() {
 
       <div className="space-y-4">
 
-        {deadlines.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-xl border border-stone-100 p-4"
-          >
+        {upcomingTasks.length === 0 ? (
 
-            <p className="font-medium text-stone-800">
-              {item.title}
-            </p>
+          <p className="text-sm text-stone-500">
+            No upcoming deadlines.
+          </p>
 
-            <p className="mt-2 text-sm text-stone-500">
-              {item.date}
-            </p>
+        ) : (
 
-          </div>
-        ))}
+          upcomingTasks.map((task) => (
+
+            <div
+              key={task.id}
+              className="rounded-xl border border-stone-100 p-4"
+            >
+
+              <p className="font-medium text-stone-800">
+                {task.title}
+              </p>
+
+              <p className="mt-2 text-sm text-stone-500">
+                {new Date(task.dueDate!).toLocaleDateString()}
+              </p>
+
+            </div>
+
+          ))
+
+        )}
 
       </div>
 

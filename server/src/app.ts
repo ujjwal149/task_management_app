@@ -4,6 +4,8 @@ import taskRoutes from "./routes/task.routes"
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
+import dashboardRoutes from "./routes/dashboard.routes";
+
 
 const app = express();
 
@@ -23,5 +25,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth",authRoutes);
 app.use("/api/tasks",taskRoutes);
+app.use("/api/dashboard",dashboardRoutes);
 
 export default app;

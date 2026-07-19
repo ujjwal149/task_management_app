@@ -1,3 +1,9 @@
+"use client";
+
+import { useEffect } from "react";
+
+import { useDashboard } from "@/hooks/useDashboard";
+
 import StatCard from "@/components/dashboard/StatCard";
 import UpcomingDeadlines from "@/components/dashboard/UpcomingDeadlines";
 import RecentTasks from "@/components/dashboard/RecentTasks";
@@ -13,6 +19,22 @@ import PageTransition from "@/components/layout/PageTransition";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 
 export default function DashboardPage() {
+
+  const {
+  overview,
+  loading,
+  fetchDashboard,
+  } = useDashboard();
+  
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
+  
+  if (loading || !overview) {
+    return <p>Loading dashboard...</p>;
+  }
+
+
   return (
     <PageTransition>
     <div className="space-y-8">
@@ -29,25 +51,25 @@ export default function DashboardPage() {
 
         <StatCard
           title="Total Tasks"
-          value={24}
+          value={overview?.totalTasks ?? 0}
           color="text-blue-600"
         />
 
         <StatCard
           title="Completed"
-          value={18}
+          value={overview?.completed ?? 0}
           color="text-green-600"
         />
 
         <StatCard
           title="Pending"
-          value={5}
+          value={overview?.todo ?? 0}
           color="text-amber-500"
         />
 
         <StatCard
           title="Overdue"
-          value={1}
+          value={overview?.overdue ?? 0}
           color="text-red-600"
         />
         

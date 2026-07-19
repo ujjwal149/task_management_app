@@ -46,7 +46,7 @@ export default function Navbar() {
           <Menu size={22} />
         </button>
 
-        <div className="relative hidden md:block md:w-96">
+        <div className="relative hidden md:block md:w-90">
 
           <Search
             size={18}
