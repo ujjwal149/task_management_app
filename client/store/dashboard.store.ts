@@ -6,14 +6,15 @@ import {
   StatusDistribution,
   PriorityDistribution,
   WeeklyActivity,
+  DashboardPeriod,
+  UpcomingDeadline,
+  RecentTask,
+  RecentActivity,
 } from "@/types/dashboard.types";
 
-import {
-  getDashboardAnalytics,
-} from "@/services/dashboard.service";
+import {getDashboardAnalytics,} from "@/services/dashboard.service";
 
 type DashboardStore = {
-
   overview: DashboardOverview | null;
 
   statusDistribution: StatusDistribution[];
@@ -22,7 +23,17 @@ type DashboardStore = {
 
   weeklyActivity: WeeklyActivity[];
 
+  upcomingDeadlines: UpcomingDeadline[];
+
+  recentTasks: RecentTask[];
+
+  recentActivity: RecentActivity[];
+
   loading: boolean;
+
+  period: DashboardPeriod;
+
+  setPeriod: (period: DashboardPeriod) => void;
 
   fetchDashboard: () => Promise<void>;
 
@@ -30,7 +41,7 @@ type DashboardStore = {
 };
 
 export const useDashboardStore =
-create<DashboardStore>((set) => ({
+create<DashboardStore>((set, get) => ({
 
   overview: null,
 
@@ -40,7 +51,20 @@ create<DashboardStore>((set) => ({
 
   weeklyActivity: [],
 
+  upcomingDeadlines: [],
+
+  recentTasks: [],
+
+  recentActivity: [],
+
   loading: false,
+
+  period: "week",
+
+  setPeriod: (period) =>
+    set({
+      period,
+    }),
 
   fetchDashboard: async () => {
 
@@ -50,12 +74,15 @@ create<DashboardStore>((set) => ({
 
     try {
 
+      const period = get().period;
+
       const data: DashboardResponse =
-        await getDashboardAnalytics();
+        await getDashboardAnalytics(period);
 
       set({
 
-        overview: data.overview,
+        overview: 
+          data.overview,
 
         statusDistribution:
           data.statusDistribution,
@@ -65,6 +92,15 @@ create<DashboardStore>((set) => ({
 
         weeklyActivity:
           data.weeklyActivity,
+
+        upcomingDeadlines:
+          data.upcomingDeadlines,
+
+        recentTasks:
+          data.recentTasks,
+
+        recentActivity:
+          data.recentActivity,
 
       });
 
@@ -93,7 +129,15 @@ create<DashboardStore>((set) => ({
 
       weeklyActivity: [],
 
+      upcomingDeadlines: [],
+
+      recentTasks:[],
+
+      recentActivity: [],
+
       loading: false,
+
+      period: "week",
 
     }),
 

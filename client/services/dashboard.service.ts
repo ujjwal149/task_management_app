@@ -1,15 +1,13 @@
 import api from "@/lib/axios";
 
-import {
-  DashboardResponse,
-} from "@/types/dashboard.types";
+import { DashboardResponse, DashboardPeriod,} from "@/types/dashboard.types";
 
-export const getDashboardAnalytics = async () => {
+
+
+export const getDashboardAnalytics = async (period: DashboardPeriod) => {
 
   const response =
-    await api.get<DashboardResponse>(
-      "/dashboard/analytics"
-    );
+    await api.get<DashboardResponse>(`/dashboard/analytics?period=${period}`);
 
   return response.data;
 };

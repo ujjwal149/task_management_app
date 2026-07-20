@@ -2,19 +2,11 @@
 
 import { CalendarClock } from "lucide-react";
 
-import { useTasks } from "@/hooks/useTasks";
+import { useDashboard } from "@/hooks/useDashboard";
 
 export default function UpcomingDeadlines() {
-  const { tasks } = useTasks();
 
-  const upcomingTasks = [...tasks]
-    .filter((task) => task.dueDate)
-    .sort(
-      (a, b) =>
-        new Date(a.dueDate!).getTime() -
-        new Date(b.dueDate!).getTime()
-    )
-    .slice(0, 3);
+  const { upcomingDeadlines } = useDashboard();
 
   return (
     <div
@@ -31,6 +23,7 @@ export default function UpcomingDeadlines() {
         hover:shadow-lg
       "
     >
+
       <div className="mb-5 flex items-center gap-2">
 
         <CalendarClock
@@ -44,38 +37,68 @@ export default function UpcomingDeadlines() {
 
       </div>
 
-      <div className="space-y-4">
+      {upcomingDeadlines.length === 0 ? (
 
-        {upcomingTasks.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-stone-300 p-6 text-center">
 
           <p className="text-sm text-stone-500">
-            No upcoming deadlines.
+            No upcoming deadlines 🎉
           </p>
 
-        ) : (
+        </div>
 
-          upcomingTasks.map((task) => (
+      ) : (
+
+        <div className="space-y-4">
+
+          {upcomingDeadlines.map((task) => (
 
             <div
               key={task.id}
               className="rounded-xl border border-stone-100 p-4"
             >
 
-              <p className="font-medium text-stone-800">
-                {task.title}
-              </p>
+              <div className="flex items-center justify-between">
 
-              <p className="mt-2 text-sm text-stone-500">
-                {new Date(task.dueDate!).toLocaleDateString()}
+                <p className="font-medium text-stone-800">
+                  {task.title}
+                </p>
+
+                <span
+                  className={`rounded-full px-2 py-1 text-xs font-semibold
+                  ${
+                    task.priority === "HIGH"
+                      ? "bg-red-100 text-red-700"
+                      : task.priority === "MEDIUM"
+                      ? "bg-amber-100 text-amber-700"
+                      : "bg-blue-100 text-blue-700"
+                  }`}
+                >
+                  {task.priority}
+                </span>
+
+              </div>
+
+              <p className="mt-3 text-sm text-stone-500">
+
+                {new Date(task.dueDate).toLocaleDateString(
+                  "en-US",
+                  {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  }
+                )}
+
               </p>
 
             </div>
 
-          ))
+          ))}
 
-        )}
+        </div>
 
-      </div>
+      )}
 
     </div>
   );

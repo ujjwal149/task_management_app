@@ -1,33 +1,15 @@
 "use client";
 
-import { useTasks } from "@/hooks/useTasks";
+import { useDashboard } from "@/hooks/useDashboard";
 
 export default function RecentTasks() {
-  const { tasks } = useTasks();
 
-  const recentTasks = [...tasks]
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() -
-        new Date(a.createdAt).getTime()
-    )
-    .slice(0, 5);
+  const { recentTasks } = useDashboard();
 
   return (
-    <div
-      className="
-        rounded-2xl
-        border
-        border-stone-200
-        bg-white
-        shadow-sm
-        p-6
-        transition-all
-        duration-300
-        hover:-translate-y-1
-        hover:shadow-lg
-      "
-    >
+
+    <div className="rounded-2xl border border-stone-200 bg-white shadow-sm p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+
       <h2 className="mb-5 text-lg font-semibold text-stone-900">
         Recent Tasks
       </h2>
@@ -43,10 +25,12 @@ export default function RecentTasks() {
         ) : (
 
           recentTasks.map((task) => (
+
             <div
               key={task.id}
               className="flex items-center justify-between rounded-xl border border-stone-100 p-4"
             >
+
               <span className="font-medium text-stone-700">
                 {task.title}
               </span>
@@ -62,12 +46,17 @@ export default function RecentTasks() {
               >
                 {task.status.replace("_", " ")}
               </span>
+
             </div>
+
           ))
 
         )}
 
       </div>
+
     </div>
+
   );
+
 }

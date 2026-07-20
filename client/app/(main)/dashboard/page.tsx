@@ -14,6 +14,11 @@ import ProductivityCard from "@/components/dashboard/ProductivityCard";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import TodaySchedule from "@/components/dashboard/TodaySchedule";
 
+import StatusChart from "@/components/dashboard/Statuschart";
+import PriorityChart from "@/components/dashboard/PriorityChart";
+
+import PeriodFilter from "@/components/dashboard/PeriodFilter";
+
 import PageTransition from "@/components/layout/PageTransition";
 
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
@@ -23,12 +28,13 @@ export default function DashboardPage() {
   const {
   overview,
   loading,
+  period,
   fetchDashboard,
   } = useDashboard();
   
   useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
+  fetchDashboard();
+  }, [fetchDashboard, period]);
   
   if (loading || !overview) {
     return <p>Loading dashboard...</p>;
@@ -41,9 +47,15 @@ export default function DashboardPage() {
 
       <Breadcrumbs />
       
-      {/* Header */}
+      <div className="flex items-start justify-between gap-6">
 
-      <HeroSection />
+      <div className="flex-1">
+        <HeroSection />
+      </div>
+
+      <PeriodFilter />
+
+      </div>
 
       {/* Statistics */}
 
@@ -81,7 +93,15 @@ export default function DashboardPage() {
 
   <div className="space-y-6 lg:col-span-2">
 
-    <WeeklyActivity />
+    <div className="grid gap-6 lg:grid-cols-2">
+
+  <WeeklyActivity />
+
+  <StatusChart />
+
+</div>
+
+<PriorityChart />
 
     <div className="grid gap-6 lg:grid-cols-2">
 

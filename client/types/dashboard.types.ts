@@ -22,6 +22,36 @@ export type WeeklyActivity = {
   tasks: number;
 };
 
+export type DashboardPeriod =
+  | "today"
+  | "week"
+  | "month"
+  | "year";
+
+export type UpcomingDeadline = {
+  id: string;
+  title: string;
+  dueDate: string;
+  priority: "LOW" | "MEDIUM" | "HIGH";
+};
+
+export type RecentTask = {
+  id: string;
+  title: string;
+  status: "TODO" | "IN_PROGRESS" | "DONE";
+  createdAt: string;
+};
+
+export type RecentActivity = {
+  id: string;
+
+  title: string;
+
+  status: "TODO" | "IN_PROGRESS" | "DONE";
+
+  updatedAt: string;
+};
+
 export type DashboardResponse = {
   overview: DashboardOverview;
 
@@ -30,4 +60,10 @@ export type DashboardResponse = {
   priorityDistribution: PriorityDistribution[];
 
   weeklyActivity: WeeklyActivity[];
+
+  upcomingDeadlines: UpcomingDeadline[];
+
+  recentTasks: RecentTask[];
+
+  recentActivity: RecentActivity[];
 };
