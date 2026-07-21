@@ -6,6 +6,8 @@ import cors from "cors";
 
 import dashboardRoutes from "./routes/dashboard.routes";
 
+import projectRoutes from "./routes/project.routes";
+
 
 const app = express();
 
@@ -24,7 +26,12 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth",authRoutes);
+
 app.use("/api/tasks",taskRoutes);
+
 app.use("/api/dashboard",dashboardRoutes);
+
+app.use("/api/projects", projectRoutes);
+
 
 export default app;
