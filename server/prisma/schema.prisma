@@ -8,32 +8,55 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   name      String
-  email     String   @unique
+  email     String    @unique
   password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdTasks Task[]
+  role      Role      @default(USER)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  createdTasks    Task[]
+  createdProjects Project[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+
+  name        String
+  description String?
+
+  color       String?   @default("#2563EB")
+
+  creatorId   String
+  creator     User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  tasks        Task[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Task {
-  id          String        @id @default(cuid())
+  id          String       @id @default(cuid())
 
   title       String
   description String?
 
-  status      TaskStatus    @default(TODO)
-  priority    TaskPriority  @default(MEDIUM)
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
 
   dueDate     DateTime?
 
   creatorId   String
-  creator User @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creator     User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  projectId   String?
+  project     Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 enum Role {
