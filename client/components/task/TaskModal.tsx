@@ -2,6 +2,10 @@
 
 import { useState,useEffect } from "react";
 
+import { useProjects } from "@/hooks/useProject";
+
+import { useProjectStore } from "@/store/project.store";
+
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -40,6 +44,13 @@ import toast from "react-hot-toast";
 
     const isEditing = Boolean(task);
 
+    const currentProject =
+    useProjectStore(
+      (state) => state.currentProject
+    );
+
+    const { projects, fetchProjects } = useProjects();
+
     const {
       register,
       handleSubmit,
@@ -50,32 +61,50 @@ import toast from "react-hot-toast";
     });
 
     useEffect(() => {
-      if(task) {
-        reset({
-          title: task.title,
-          description: task.description ?? "",
-          priority: task.priority,
 
-          dueDate: 
-                task.dueDate
-                    ? new Date(task.dueDate)
-                          .toISOString()
-                          .slice(0,16)
-                    : "",
-        });
-      }else{
-        reset({
-        title: "",
-        description: "",
-        priority: "MEDIUM",
-        dueDate: "",
+    fetchProjects();
+
+    if (task) {
+
+      reset({
+        title: task.title,
+        description: task.description ?? "",
+        priority: task.priority,
+
+        dueDate: task.dueDate
+          ? new Date(task.dueDate)
+              .toISOString()
+              .slice(0, 16)
+
+          : "",
+
+        projectId: task.projectId,
+
       });
-      }
-    },[task,reset]);
 
-    const onSubmit = async (
-  data: CreateTaskInput
-) => {
+    } else {
+
+      reset({
+
+        title: "",
+
+        description: "",
+
+        priority: "MEDIUM",
+
+        dueDate: "",
+
+        projectId: "",
+
+      });
+
+    }
+
+    },[task, reset, fetchProjects]);
+
+  const onSubmit = async (
+    data: CreateTaskInput
+  ) => {
 
   if (submitting) return;
 
@@ -87,7 +116,14 @@ import toast from "react-hot-toast";
 
       const response = await updateTask(
         task.id,
-        data
+        {
+        
+          ...data,
+        
+          projectId:
+            currentProject?.id,
+        
+        }
       );
 
       useTaskStore
@@ -99,11 +135,21 @@ import toast from "react-hot-toast";
     } else {
 
       const response =
-        await createTask(data);
-
-      await createTask(data);
-
-      await useTaskStore.getState().fetchTasks();
+        await createTask({
+      
+        ...data,
+      
+        projectId: currentProject?.id,
+      
+      });
+    
+    useTaskStore
+      .getState()
+      .addTask(response.task);
+    
+    await useTaskStore
+      .getState()
+      .fetchTasks();
 
       toast.success("Task created");
 
@@ -183,6 +229,56 @@ import toast from "react-hot-toast";
               {...register("description")}
               className="  w-full  rounded-xl  border  border-stone-300  px-4  py-3  outline-none  transition  focus:border-blue-600"
             />
+
+          </div>
+
+          {/* Project */}
+
+          <div>
+
+            <label className="mb-2 block text-sm font-medium text-stone-700">
+              Project
+            </label>
+
+            <select
+              {...register("projectId")}
+              className="
+                w-full
+                rounded-xl
+                border
+                border-stone-300
+                px-4
+                py-3
+                outline-none
+                transition
+                focus:border-blue-600
+              "
+            >
+            
+              <option value="">
+                Select Project
+              </option>
+
+              {projects.map((project) => (
+              
+                <option
+                  key={project.id}
+                  value={project.id}
+                >
+                  {project.name}
+                </option>
+
+              ))}
+
+            </select>
+            
+            {errors.projectId && (
+            
+              <p className="mt-1 text-sm text-red-500">
+                {errors.projectId.message}
+              </p>
+
+            )}
 
           </div>
 

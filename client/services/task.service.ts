@@ -2,17 +2,42 @@ import api from "@/lib/axios";
 import {GetTasksResponse,} from "@/types/task.types";
 import { CreateTaskInput } from "@/validations/task.schema";
 
+import {
+  Task,
+  TaskStatus,
+} from "@/types/task.types";
+
 
 //Get All Task
 export const getMyTasks = async (
+
   page = 1,
-  limit = 9
+
+  limit = 9,
+
+  projectId?: string,
 ) => {
 
-  const response =
-    await api.get<GetTasksResponse>(
-      `/tasks?page=${page}&limit=${limit}`
-    );
+  const query = new URLSearchParams({
+
+  page: String(page),
+
+  limit: String(limit),
+
+});
+
+if (projectId) {
+
+  query.append("projectId", projectId);
+
+}
+
+const response =
+  await api.get<GetTasksResponse>(
+
+    `/tasks?${query.toString()}`
+
+  );
 
   return response.data;
 };;
@@ -49,3 +74,35 @@ export const deleteTask = async(
 
   return response.data
 }
+
+//Drag and Drop 
+export const updateTaskStatus = async (
+  task: Task,
+  status: TaskStatus
+) => {
+
+  const response = await api.put(
+
+    `/tasks/${task.id}`,
+
+    {
+
+      title: task.title,
+
+      description: task.description,
+
+      priority: task.priority,
+
+      dueDate: task.dueDate,
+
+      projectId: task.projectId,
+
+      status,
+
+    }
+
+  );
+
+  return response.data;
+
+};

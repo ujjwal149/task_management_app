@@ -1,7 +1,11 @@
 import { create } from "zustand";
 
-import { Task } from "@/types/task.types";
+import { Task, TaskStatus } from "@/types/task.types";
 import { getMyTasks } from "@/services/task.service";
+
+import { useProjectStore } from "./project.store";
+
+
 
 type TaskStore = {
   // Task State
@@ -21,7 +25,7 @@ type TaskStore = {
   setPage: (page: number) => void;
 
   // Actions
-  fetchTasks: () => Promise<void>;
+  fetchTasks: (projectId?: string) => Promise<void>;
 
   setTasks: (tasks: Task[]) => void;
 
@@ -32,12 +36,17 @@ type TaskStore = {
   removeTask: (taskId: string) => void;
 
   clearTasks: () => void;
+
+  moveTask: (
+  taskId: string,
+  status: TaskStatus
+) => void;
 };
 
 export const useTaskStore = create<TaskStore>((set, get) => ({
-  // -------------------------
+
   // Initial State
-  // -------------------------
+
 
   tasks: [],
 
@@ -53,61 +62,83 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
   totalPages: 1,
 
-  // -------------------------
+
   // Search
-  // -------------------------
+
 
   setSearchQuery: (query) =>
     set({
       searchQuery: query,
     }),
 
-  // -------------------------
+
   // Pagination
-  // -------------------------
+ 
 
   setPage: (page) =>
     set({
       page,
     }),
 
-  // -------------------------
   // Fetch Tasks
-  // -------------------------
+ 
 
   fetchTasks: async () => {
+
+  set({
+    loading: true,
+  });
+
+  try {
+
+    const { page, limit } = get();
+
+    const currentProject =
+      useProjectStore
+        .getState()
+        .currentProject;
+
+    const data = await getMyTasks(
+
+      page,
+
+      limit,
+
+      currentProject?.id
+
+    );
+
     set({
-      loading: true,
+
+      tasks: data.tasks,
+
+      page: data.page,
+
+      limit: data.limit,
+
+      total: data.total,
+
+      totalPages: data.totalPages,
+
     });
 
-    try {
-      const { page, limit } = get();
+  } catch (error) {
 
-      const data = await getMyTasks(page, limit);
+    console.error(error);
 
-      set({
-        tasks: data.tasks,
+  } finally {
 
-        page: data.page,
+    set({
+      loading: false,
+    });
 
-        limit: data.limit,
+  }
 
-        total: data.total,
+},
 
-        totalPages: data.totalPages,
-      });
-    } catch (error) {
-      console.error(error);
-    } finally {
-      set({
-        loading: false,
-      });
-    }
-  },
 
-  // -------------------------
   // CRUD Operations
-  // -------------------------
+
 
   setTasks: (tasks) =>
     set({
@@ -149,4 +180,18 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
       totalPages: 1,
     }),
+
+    //Drang and Drop
+    
+    moveTask: (taskId, status) =>
+  set((state) => ({
+    tasks: state.tasks.map((task) =>
+      task.id === taskId
+        ? {
+            ...task,
+            status,
+          }
+        : task
+    ),
+  })),
 }));

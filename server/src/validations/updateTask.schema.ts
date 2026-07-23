@@ -1,13 +1,16 @@
 import { z } from "zod";
 
 export const updateTaskSchema = z.object({
+
   title: z
     .string()
     .min(3)
+    .max(100)
     .optional(),
 
   description: z
     .string()
+    .max(500)
     .optional(),
 
   priority: z
@@ -21,8 +24,12 @@ export const updateTaskSchema = z.object({
   dueDate: z
     .string()
     .optional(),
+
+  projectId: z
+    .string()
+    .optional(),
+
 });
 
-export type UpdateTaskInput = z.infer<
-  typeof updateTaskSchema
->;
+export type UpdateTaskInput =
+  z.infer<typeof updateTaskSchema>;

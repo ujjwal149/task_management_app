@@ -12,6 +12,12 @@ export type Project = {
     createdAt: string;
 
     updatedAt: string;
+
+    _count: {
+
+        tasks: number;
+
+    };
 };
 
 export type CreateProjectInput = {

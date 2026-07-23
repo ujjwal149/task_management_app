@@ -1,6 +1,6 @@
 "use client";
 
-import {LayoutDashboard,CheckSquare,FolderKanban,Calendar,Users,Settings,LogOut,X} from "lucide-react";
+import {LayoutDashboard,CheckSquare,FolderKanban,Calendar,Users,Settings,LogOut,X,Columns3,} from "lucide-react";
 
 import SidebarItem from "./SidebarItem";
 
@@ -72,6 +72,10 @@ const { user } = useAuth();
 
           <SidebarItem href="/tasks" icon={CheckSquare}>
             Tasks
+          </SidebarItem>
+
+          <SidebarItem href="/board" icon={Columns3}>
+            Board
           </SidebarItem>
 
           <SidebarItem href="/projects" icon={FolderKanban}>

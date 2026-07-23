@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Pencil, Trash2} from "lucide-react";
+import { CalendarDays, Pencil, Trash2, FolderKanban, } from "lucide-react";
 
 import { Task } from "@/types/task.types";
 import { useUIStore } from "@/store/ui.store";
@@ -29,6 +29,32 @@ export default function TaskCard({
         hover:shadow-lg
       "
     >
+
+      {/* Project */}
+
+      <div className="mb-4 flex items-center gap-2">
+
+        <div
+          className="h-3 w-3 rounded-full"
+          style={{
+            backgroundColor:
+              task.project?.color || "#2563EB",
+          }}
+        />
+
+        <FolderKanban
+          size={16}
+          className="text-stone-500"
+        />
+
+        <span className="text-sm font-medium text-stone-600">
+        
+          {task.project?.name}
+        
+        </span>
+        
+      </div>
+        
       {/* Header */}
 
       <div className="flex items-center justify-between">
@@ -39,8 +65,28 @@ export default function TaskCard({
 
         <div className="flex items-center gap-3">
 
-          <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+          <span
+            className={`
+              rounded-full
+              px-3
+              py-1
+              text-xs
+              font-semibold
+            
+              ${
+                task.priority === "HIGH"
+                  ? "bg-red-100 text-red-700"
+              
+                  : task.priority === "MEDIUM"
+                  ? "bg-yellow-100 text-yellow-700"
+              
+                  : "bg-green-100 text-green-700"
+              }
+            `}
+          >
+
             {task.priority}
+            
           </span>
 
           <button
@@ -75,8 +121,28 @@ export default function TaskCard({
 
       <div className="mt-6 flex items-center justify-between">
 
-        <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium">
-          {task.status}
+        <span
+          className={`
+            rounded-full
+            px-3
+            py-1
+            text-xs
+            font-medium
+          
+            ${
+              task.status === "DONE"
+                ? "bg-green-100 text-green-700"
+            
+                : task.status === "IN_PROGRESS"
+                ? "bg-blue-100 text-blue-700"
+            
+                : "bg-stone-200 text-stone-700"
+            }
+          `}
+        >
+          
+          {task.status.replace("_", " ")}
+          
         </span>
 
         <div className="flex items-center gap-2 text-sm text-stone-500">

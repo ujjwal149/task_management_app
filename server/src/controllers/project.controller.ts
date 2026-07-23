@@ -5,6 +5,8 @@ import prisma from "../lib/prisma";
 import { createProjectSchema, updateProjectSchema, } from "../validations/project.schema";
 
 
+
+// Create Project
 export const createProject = async (
   req: Request,
   res: Response
@@ -46,6 +48,7 @@ export const createProject = async (
   }
 };
 
+//Get all Project
 export const getProjects = async (
   req: Request,
   res: Response
@@ -60,11 +63,17 @@ export const getProjects = async (
         where: {
           creatorId: userId,
         },
+        include:{
+          _count:{
+            select:{
+              tasks: true,
+            },
+          },
+        },
 
         orderBy: {
           createdAt: "desc",
         },
-
       });
 
     return res.status(200).json(projects);
@@ -80,6 +89,8 @@ export const getProjects = async (
   }
 };
 
+
+// Get Project
 export const getProjectById = async (
   req: Request,
   res: Response
@@ -124,6 +135,8 @@ export const getProjectById = async (
   }
 };
 
+
+//Update Project
 export const updateProject = async (
   req: Request,
   res: Response

@@ -1,29 +1,37 @@
-export type TaskStatus = 
-    | "TODO" 
-    | "IN PROGRESS"
-    | "DONE";
-    
-export type TaskPriority = 
-    | "LOW"
-    | "MEDIUM"
-    | "HIGH";
+import { Project } from "./project.types";
 
-export interface Task{
-    id: string;
+export type TaskStatus =
+  | "TODO"
+  | "IN_PROGRESS"
+  | "DONE";
 
-    title: string;
-    description?: string | null;
+export type TaskPriority =
+  | "LOW"
+  | "MEDIUM"
+  | "HIGH";
 
-    status: TaskStatus;
-    priority: TaskPriority;
+export interface Task {
+  id: string;
 
-    dueDate?: string | null;
+  title: string;
 
-    creatorId: string;
+  description?: string | null;
+
+  status: TaskStatus;
+
+  priority: TaskPriority;
+
+  dueDate?: string | null;
+
+  creatorId: string;
+
+  projectId: string;
+
+  project: Project;
 
   createdAt: string;
-  updatedAt: string;
 
+  updatedAt: string;
 }
 
 export type GetTasksResponse = {

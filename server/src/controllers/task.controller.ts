@@ -19,14 +19,22 @@ export const createTask = async (
     const task = await prisma.task.create({
       data: {
         title: validatedData.title,
+      
         description: validatedData.description,
+      
         priority: validatedData.priority,
-
+      
         dueDate: validatedData.dueDate
           ? new Date(validatedData.dueDate)
           : null,
-
+      
         creatorId: userId,
+      
+        projectId: validatedData.projectId,
+      },
+    
+      include: {
+        project: true,
       },
     });
 
@@ -57,25 +65,51 @@ export const getMyTasks = async (
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 9;
 
+    const projectId = req.query.projectId as string | undefined;
+
     const skip = (page - 1) * limit;
 
     const [tasks, total] = await Promise.all([
       prisma.task.findMany({
         where: {
-          creatorId: userId,
+
+        creatorId: userId,
+
+        ...(projectId && {
+        
+            projectId,
+        
+        }),
+      
+    },
+      
+        include: {
+          project: true,
         },
+      
         orderBy: {
           createdAt: "desc",
         },
+      
         skip,
         take: limit,
       }),
 
       prisma.task.count({
-        where: {
-          creatorId: userId,
-        },
-      }),
+
+      where: {
+      
+        creatorId: userId,
+      
+        ...(projectId && {
+        
+          projectId,
+        
+        }),
+      
+      },
+    
+    }),
     ]);
 
     return res.status(200).json({
@@ -133,15 +167,24 @@ export const updateTask = async (
         id: taskId,
       },
       data: {
-          title: validatedData.title,
-          description: validatedData.description,
-          priority: validatedData.priority,
-          status: validatedData.status,
-              
-          dueDate: validatedData.dueDate
-            ? new Date(validatedData.dueDate)
-            : undefined,
-        },
+      title: validatedData.title,
+
+      description: validatedData.description,
+
+      priority: validatedData.priority,
+
+      status: validatedData.status,
+
+      dueDate: validatedData.dueDate
+        ? new Date(validatedData.dueDate)
+        : undefined,
+
+      projectId: validatedData.projectId,
+    },
+
+      include: {
+        project: true,
+      },
       });
 
     return res.status(200).json({
@@ -247,6 +290,7 @@ export const getAllTask = async (
             email: true,
           },
         },
+        project: true,
       },
     });
 

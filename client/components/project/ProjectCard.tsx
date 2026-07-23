@@ -71,12 +71,26 @@ export default function ProjectCard({
 
       <div className="mt-6 flex items-center justify-between">
 
-        <span className="text-xs text-stone-400">
-          Created{" "}
-          {new Date(
-            project.createdAt
-          ).toLocaleDateString()}
-        </span>
+        <div>
+
+          <span className="text-xs text-stone-400">
+                
+            {project._count.tasks}
+                
+            {project._count.tasks === 1
+              ? " Task"
+              : " Tasks"}
+        
+          </span>
+            
+          <p className="mt-1 text-xs text-stone-400">
+            
+            Created{" "}
+            {new Date(project.createdAt).toLocaleDateString()}
+            
+          </p>
+            
+        </div>
 
         <div className="flex items-center gap-2">
 

@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-import { FolderKanban, Plus } from "lucide-react";
+import { FolderKanban, Plus , ListTodo, } from "lucide-react";
 
 import CreateProjectModal from "./CreateProjectModal";
 
 import { useProjects } from "@/hooks/useProject";
+
+import { useTaskStore } from "@/store/task.store";
 
 export default function ProjectSidebar() {
   const {
@@ -16,40 +18,27 @@ export default function ProjectSidebar() {
     fetchProjects,
   } = useProjects();
 
+  const { fetchTasks } = useTaskStore();
+  
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
+     if (currentProject === null) {
+
+    fetchTasks();
+
+  }
+  }, [currentProject, fetchTasks]);
 
   return (
     <>
       <aside
-        className="
-          sticky
-          top-24
-          h-[calc(100vh-8rem)]
-          w-full
-          rounded-2xl
-          border
-          border-stone-200
-          bg-white
-          shadow-sm
-          overflow-hidden
-        "
+        className=" sticky top-24 h-[calc(100vh-15rem)] w-full rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden "
       >
         {/* Header */}
 
         <div
-          className="
-            flex
-            items-center
-            justify-between
-            border-b
-            border-stone-200
-            px-5
-            py-4
-          "
+          className=" flex items-center justify-between border-b border-stone-200 px-5 py-4 "
         >
           <div>
 
@@ -66,19 +55,7 @@ export default function ProjectSidebar() {
 
           <button
             onClick={() => setOpen(true)}
-            className="
-              flex
-              h-10
-              w-10
-              items-center
-              justify-center
-              rounded-xl
-              bg-blue-600
-              text-white
-              transition
-              hover:scale-105
-              hover:bg-blue-700
-            "
+            className=" flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white transition hover:scale-105 hover:bg-blue-700 "
           >
             <Plus size={20} />
           </button>
@@ -88,24 +65,51 @@ export default function ProjectSidebar() {
         {/* Project List */}
 
         <div
-          className="
-            h-[calc(100%-82px)]
-            overflow-y-auto
-            p-3
-            space-y-2
-          "
+          className=" h-[calc(100%-82px)] overflow-y-auto p-3 space-y-2 "
         >
+
+          <button
+            onClick={async () => {
+            
+              setCurrentProject(null);
+            
+              await fetchTasks();
+            
+            }}
+            className={`
+              flex
+              w-full
+              items-center
+              gap-3
+              rounded-xl
+              border
+              p-3
+              transition-all
+            
+              ${
+                currentProject === null
+                  ? "border-blue-200 bg-blue-50 shadow-sm"
+                  : "border-transparent hover:border-stone-200 hover:bg-stone-50"
+              }
+            `}
+          >
+
+            <ListTodo
+              size={18}
+              className="text-blue-600"
+            />
+
+            <span className="font-medium text-stone-800">
+              All Tasks
+            </span>
+            
+          </button>
+            
+
           {projects.length === 0 ? (
 
             <div
-              className="
-                flex
-                h-full
-                flex-col
-                items-center
-                justify-center
-                text-center
-              "
+              className=" flex h-full flex-col items-center justify-center text-center"
             >
 
               <FolderKanban
@@ -129,17 +133,16 @@ export default function ProjectSidebar() {
 
               <button
                 key={project.id}
-                onClick={() => setCurrentProject(project)}
-                className={`
-                  flex
-                  w-full
-                  items-center
-                  gap-3
-                  rounded-xl
-                  border
-                  p-3
-                  transition-all
-                  duration-200
+                onClick={async () => {
+
+                  setCurrentProject(project);
+
+                  setTimeout(() => {
+                      fetchTasks();
+                  }, 0);
+
+                }}
+                className={` flex w-full items-center gap-3 rounded-xl border p-3 transition-all duration-200
 
                   ${
                     currentProject?.id === project.id
@@ -160,12 +163,7 @@ export default function ProjectSidebar() {
                 <div className="min-w-0 flex-1">
 
                   <p
-                    className="
-                      truncate
-                      text-left
-                      font-medium
-                      text-stone-800
-                    "
+                    className=" truncate text-left font-medium text-stone-800 "
                   >
                     {project.name}
                   </p>
@@ -173,12 +171,7 @@ export default function ProjectSidebar() {
                   {project.description && (
 
                     <p
-                      className="
-                        mt-1
-                        truncate
-                        text-xs
-                        text-stone-500
-                      "
+                      className=" mt-1 truncate text-xs text-stone-500 "
                     >
                       {project.description}
                     </p>
