@@ -9,6 +9,10 @@
 
   import projectRoutes from "./routes/project.routes";
 
+  import teamRoutes from "./routes/team.routes";
+
+
+
 
   const app = express();
 
@@ -35,6 +39,8 @@
   app.use("/api/projects", projectRoutes);
 
   app.use("/api/users",userRoutes)
+
+  app.use("/api/team", teamRoutes);
 
 
   export default app;

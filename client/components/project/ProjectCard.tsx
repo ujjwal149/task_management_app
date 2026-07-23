@@ -75,9 +75,9 @@ export default function ProjectCard({
 
           <span className="text-xs text-stone-400">
                 
-            {project._count.tasks}
+            {project._count.tasks ?? 0}
                 
-            {project._count.tasks === 1
+            {(project._count.tasks ?? 0) === 1
               ? " Task"
               : " Tasks"}
         

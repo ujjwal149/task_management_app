@@ -24,7 +24,7 @@ export const createTaskSchema = z.object({
 
   projectId: z
     .string()
-    .optional(),
+    .min(1, "Please select a project."),
 });
 
 export type CreateTaskInput =

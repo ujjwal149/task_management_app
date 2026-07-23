@@ -62,9 +62,13 @@ create<ProjectStore>((set, get) => ({
       const projects =
         await getProjects();
 
-      set({
+      set((state) => ({
         projects,
-      });
+      
+        currentProject:
+          state.currentProject ??
+          (projects.length > 0 ? projects[0] : null),
+      }));
 
     } catch (error) {
 
@@ -156,11 +160,11 @@ create<ProjectStore>((set, get) => ({
           ),
 
         currentProject:
-
           state.currentProject?.id === id
-            ? null
+            ? state.projects.filter(
+                (project) => project.id !== id
+              )[0] ?? null
             : state.currentProject,
-
       }));
 
     } catch (error) {

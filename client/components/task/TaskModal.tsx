@@ -119,10 +119,6 @@ import toast from "react-hot-toast";
         {
         
           ...data,
-        
-          projectId:
-            currentProject?.id,
-        
         }
       );
 
@@ -134,14 +130,9 @@ import toast from "react-hot-toast";
 
     } else {
 
-      const response =
-        await createTask({
-      
-        ...data,
-      
-        projectId: currentProject?.id,
-      
-      });
+      const response = await createTask({
+      ...data,
+    });
     
     useTaskStore
       .getState()

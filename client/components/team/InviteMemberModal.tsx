@@ -1,14 +1,18 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 import Modal from "@/components/ui/Modal";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
+import { inviteMember } from "@/services/team.service";
+import { useProjectStore } from "@/store/project.store";
+
 type InviteForm = {
   email: string;
-  role: "ADMIN" | "MEMBER";
+  role: "ADMIN" | "USER";
 };
 
 type Props = {
@@ -20,24 +24,47 @@ export default function InviteMemberModal({
   open,
   onClose,
 }: Props) {
+  const currentProject = useProjectStore(
+    (state) => state.currentProject
+  );
+
   const {
     register,
     handleSubmit,
     reset,
   } = useForm<InviteForm>({
     defaultValues: {
-      role: "MEMBER",
+      role: "USER",
     },
   });
 
   const onSubmit = async (data: InviteForm) => {
-    console.log(data);
+    if (!currentProject) {
+      toast.error("Please select a project first.");
+      return;
+    }
 
-    // Backend API here later
+    try {
+      const response = await inviteMember(
+        data.email,
+        data.role,
+        currentProject.id
+      );
 
-    reset();
+      toast.success(response.message);
 
-    onClose();
+      reset({
+        email: "",
+        role: "USER",
+      });
+
+      onClose();
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message ??
+          "Something went wrong."
+      );
+    }
   };
 
   return (
@@ -50,6 +77,8 @@ export default function InviteMemberModal({
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-5"
       >
+        {/* Email */}
+
         <div>
           <label className="mb-2 block text-sm font-medium text-stone-700">
             Email
@@ -62,6 +91,8 @@ export default function InviteMemberModal({
           />
         </div>
 
+        {/* Role */}
+
         <div>
           <label className="mb-2 block text-sm font-medium text-stone-700">
             Role
@@ -69,9 +100,9 @@ export default function InviteMemberModal({
 
           <select
             {...register("role")}
-            className="w-full rounded-xl border border-stone-300 px-4 py-3 outline-none focus:border-blue-600"
+            className="w-full rounded-xl border border-stone-300 px-4 py-3 outline-none transition focus:border-blue-600"
           >
-            <option value="MEMBER">
+            <option value="USER">
               Member
             </option>
 
@@ -81,8 +112,9 @@ export default function InviteMemberModal({
           </select>
         </div>
 
-        <div className="flex justify-end gap-3">
+        {/* Footer */}
 
+        <div className="flex justify-end gap-3">
           <Button
             type="button"
             variant="secondary"
@@ -94,7 +126,6 @@ export default function InviteMemberModal({
           <Button type="submit">
             Invite
           </Button>
-
         </div>
       </form>
     </Modal>

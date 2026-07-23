@@ -1,13 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Users } from "lucide-react";
 
-import InviteMemberModal from "./InviteMemberModal";
 import Button from "@/components/ui/Button";
+
+import InviteMemberModal from "./InviteMemberModal";
+import TeamCard from "./TeamCard";
+
+import { useProjectStore } from "@/store/project.store";
+import { useTeamStore } from "@/store/team.store";
 
 export default function TeamList() {
   const [open, setOpen] = useState(false);
+
+  const currentProject = useProjectStore(
+    (state) => state.currentProject
+  );
+
+  const {
+    members,
+    loading,
+    fetchMembers,
+  } = useTeamStore();
+
+  useEffect(() => {
+    if (currentProject) {
+      fetchMembers(currentProject.id);
+    }
+  }, [currentProject, fetchMembers]);
 
   return (
     <>
@@ -21,30 +42,80 @@ export default function TeamList() {
             </h1>
 
             <p className="mt-1 text-stone-500">
-              Manage your workspace members.
+              Manage your project members.
             </p>
           </div>
 
-          <Button onClick={() => setOpen(true)}>
+          <Button
+            onClick={() => setOpen(true)}
+            disabled={!currentProject}
+          >
             <Plus size={18} />
             Invite Member
           </Button>
 
         </div>
 
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-stone-300 py-20">
+        {!currentProject ? (
 
-          <Users size={48} className="mb-4 text-stone-400" />
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-stone-300 py-20">
 
-          <h2 className="text-lg font-semibold">
-            No Team Members Yet
-          </h2>
+            <Users
+              size={48}
+              className="mb-4 text-stone-400"
+            />
 
-          <p className="mt-2 text-sm text-stone-500">
-            Invite members to collaborate.
-          </p>
+            <h2 className="text-lg font-semibold">
+              No Project Selected
+            </h2>
 
-        </div>
+            <p className="mt-2 text-sm text-stone-500">
+              Select a project first.
+            </p>
+
+          </div>
+
+        ) : loading ? (
+
+          <div className="py-20 text-center text-stone-500">
+            Loading...
+          </div>
+
+        ) : members.length === 0 ? (
+
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-stone-300 py-20">
+
+            <Users
+              size={48}
+              className="mb-4 text-stone-400"
+            />
+
+            <h2 className="text-lg font-semibold">
+              No Team Members
+            </h2>
+
+            <p className="mt-2 text-sm text-stone-500">
+              Invite members to collaborate.
+            </p>
+
+          </div>
+
+        ) : (
+
+          <div className="space-y-4">
+
+            {members.map((member) => (
+
+              <TeamCard
+                key={member.id}
+                member={member}
+              />
+
+            ))}
+
+          </div>
+
+        )}
 
       </div>
 

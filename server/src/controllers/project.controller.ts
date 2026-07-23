@@ -19,19 +19,29 @@ export const createProject = async (
       createProjectSchema.parse(req.body);
 
     const project = await prisma.project.create({
-
       data: {
-
         name: data.name,
-
+      
         description: data.description,
-
+      
         creatorId: userId,
-
+      
+        members: {
+          create: {
+            userId,
+            role: "ADMIN",
+          },
+        },
       },
-
+    
+      include: {
+        _count: {
+          select: {
+            tasks: true,
+          },
+        },
+      },
     });
-
     return res.status(201).json({
       message: "Project created successfully.",
       project,
@@ -173,13 +183,19 @@ export const updateProject = async (
 
     const updatedProject =
       await prisma.project.update({
-
         where: {
           id,
         },
-
+      
         data,
-
+      
+        include: {
+          _count: {
+            select: {
+              tasks: true,
+            },
+          },
+        },
       });
 
     return res.status(200).json({
