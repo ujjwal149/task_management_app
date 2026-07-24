@@ -26,3 +26,15 @@ export const deleteUser = async (
 
   return response.data;
 };
+
+export const updatePassword = async (data: {
+  currentPassword: string;
+  newPassword: string;
+}) => {
+  const response = await api.patch(
+    "/users/password",
+    data
+  );
+
+  return response.data;
+};

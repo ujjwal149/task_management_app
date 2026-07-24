@@ -1,12 +1,18 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { useEffect, useRef, useState } from "react";
 import {ChevronDown,LogOut,Settings,User,} from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useLogout } from "@/hooks/useLogout";
 
+
+
 export default function UserDropdown() {
+
+  const router = useRouter();
 
 const { user } = useAuth();
 
@@ -49,8 +55,19 @@ const { user } = useAuth();
         onClick={() => setOpen(!open)}
         className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-stone-100"
       >
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-semibold text-white">
-          {user?.name?.charAt(0).toUpperCase()}
+        <div className="h-10 w-10 overflow-hidden rounded-full border border-stone-200">
+
+          <img
+            src={
+              user?.avatar ??
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                user?.name ?? "User"
+              )}`
+            }
+            alt={user?.name}
+            className="h-full w-full object-cover"
+          />
+
         </div>
 
         <ChevronDown size={18} />
@@ -61,22 +78,57 @@ const { user } = useAuth();
 
           <div className="border-b border-stone-200 p-4">
 
-            <p className="font-semibold">
-              {user?.name}
-            </p>
+            <div className="flex items-center gap-3  p-4">
 
-            <p className="text-sm text-stone-500">
-              {user?.role}
-            </p>
+              <img
+                src={
+                  user?.avatar ??
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    user?.name ?? "User"
+                  )}`
+                }
+                alt={user?.name}
+                className="h-12 w-12 rounded-full object-cover"
+              />
+
+              <div>
+              
+                <p className="font-semibold text-stone-900">
+                  {user?.name}
+                </p>
+              
+                <p className="text-sm text-stone-500">
+                  {user?.email}
+                </p>
+              
+                <p className="mt-1 text-xs font-medium text-blue-600">
+                  {user?.role}
+                </p>
+              
+              </div>
+              
+            </div>
 
           </div>
 
-          <button className="flex w-full items-center gap-3 px-5 py-3 text-left hover:bg-stone-50">
+          <button
+            onClick={() => {
+              setOpen(false);
+              router.push("/settings");
+            }}
+            className="flex w-full items-center gap-3 px-5 py-3 text-left hover:bg-stone-50"
+          >
             <User size={18} />
             My Profile
           </button>
 
-          <button className="flex w-full items-center gap-3 px-5 py-3 text-left hover:bg-stone-50">
+          <button
+            onClick={() => {
+              setOpen(false);
+              router.push("/settings");
+            }}
+            className="flex w-full items-center gap-3 px-5 py-3 text-left hover:bg-stone-50"
+          >
             <Settings size={18} />
             Settings
           </button>

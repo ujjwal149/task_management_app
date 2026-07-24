@@ -69,9 +69,9 @@ export default function Navbar() {
 
       <div className="flex items-center gap-3 md:gap-5">
 
-        <button className="rounded-xl p-2 text-stone-600 transition hover:bg-stone-100">
+        {/* <button className="rounded-xl p-2 text-stone-600 transition hover:bg-stone-100">
           <Bell size={20} />
-        </button>
+        </button> */}
 
         <button
           onClick={openCreateTaskModal}

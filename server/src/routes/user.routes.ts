@@ -1,13 +1,18 @@
 import { Router } from "express";
 
-import {
+import { 
   getUsers,
-  updateUserRole,
-  deleteUser,
-} from "../controllers/user.controller";
+   updateUserRole,
+    deleteUser,
+    getProfile,
+     updatePassword,
+      updateProfile,
+      updateAvatar,
+   } from "../controllers/user.controller";
 
 import { authMiddleware } from "../middleware/auth.middleware";
 import { adminMiddleware } from "../middleware/admin.middleware";
+import upload from "../middleware/upload.middleware";
 
 const router = Router();
 
@@ -32,6 +37,35 @@ router.delete(
   authMiddleware,
   adminMiddleware,
   deleteUser
+);
+
+/* Get User */
+router.get(
+  "/profile",
+  authMiddleware,
+  getProfile
+);
+
+/*Update Profile*/
+router.patch(
+  "/profile",
+  authMiddleware,
+  updateProfile
+);
+
+/*Update Password*/
+router.patch(
+  "/password",
+  authMiddleware,
+  updatePassword
+);
+
+/* Upload Avatar */
+router.patch(
+  "/avatar",
+  authMiddleware,
+  upload.single("avatar"),
+  updateAvatar
 );
 
 export default router;

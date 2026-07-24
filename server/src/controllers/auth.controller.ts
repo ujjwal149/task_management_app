@@ -111,6 +111,7 @@ export const signin = async(
             user:{
                 id: user.id,
                 name: user.name,
+                avatar: user.avatar ,
                 email: user.email,
                 role: user.role,
             },
@@ -151,6 +152,7 @@ export const me = async(req:Request,res:Response) => {
                 id: true,
                 name: true,
                 email: true,
+                avatar: true,
                 role: true,
                 createdAt: true,
             },
