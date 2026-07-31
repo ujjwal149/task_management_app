@@ -32,7 +32,7 @@ jobs:
           push: true
           tags: ujjwal149/taskflow-client:latest
           build-args: |
-            NEXT_PUBLIC_API_URL=http://3.108.32.169:5000/api
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
 
       - name: Build and Push Server Image
         uses: docker/build-push-action@v6
