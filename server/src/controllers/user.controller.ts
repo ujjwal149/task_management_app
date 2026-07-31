@@ -231,18 +231,21 @@ export const updatePassword = async (
       });
 
     if (!user) {
-
       return res.status(404).json({
         message: "User not found.",
       });
-
     }
-
-    const passwordMatches =
-      await bcrypt.compare(
-        data.currentPassword,
-        user.password
-      );
+    
+    if (!user.password) {
+      return res.status(400).json({
+        message: "Password login is not available for this account.",
+      });
+    }
+    
+    const passwordMatches = await bcrypt.compare(
+      data.currentPassword,
+      user.password
+    );
 
     if (!passwordMatches) {
 
