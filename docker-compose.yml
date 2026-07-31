@@ -1,23 +1,25 @@
-version: "3.9"
-
 services:
   client:
-    build:
-      context: ./client
-      args:
-        NEXT_PUBLIC_API_URL: http://localhost:5000/api
-
+    image: ujjwal149/taskflow-client:latest
     container_name: taskflow-client
+    restart: unless-stopped
+
     ports:
       - "3000:3000"
+
     depends_on:
       - server
 
+    environment:
+      NEXT_PUBLIC_API_URL: http://3.108.32.169:5000/api
+
   server:
-    build:
-      context: ./server
+    image: ujjwal149/taskflow-server:latest
     container_name: taskflow-server
+    restart: unless-stopped
+
     ports:
       - "5000:5000"
+
     env_file:
-      - ./server/.env
+      - .env
