@@ -30,13 +30,13 @@ jobs:
         with:
           context: ./client
           push: true
-          tags: |
-            ujjwal149/taskflow-client:latest
+          tags: ujjwal149/taskflow-client:latest
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://3.108.32.169:5000/api
 
       - name: Build and Push Server Image
         uses: docker/build-push-action@v6
         with:
           context: ./server
           push: true
-          tags: |
-            ujjwal149/taskflow-server:latest
+          tags: ujjwal149/taskflow-server:latest
