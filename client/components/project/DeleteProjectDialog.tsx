@@ -51,7 +51,7 @@ export default function DeleteProjectDialog({
       onClose={onClose}
     >
 
-      <div className="space-y-6">
+      <div className="space-y-6 cursor-pointer">
 
         <div className="flex justify-center">
 
@@ -63,7 +63,7 @@ export default function DeleteProjectDialog({
               items-center
               justify-center
               rounded-full
-              bg-red-100
+              bg-red-100         
             "
           >
 
