@@ -43,7 +43,10 @@ export const signup = async (
       },
     });
 
-    const token = generateToken(user.id);
+    const token = generateToken({
+      userId: user.id,
+      role: user.role,
+    });
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -122,7 +125,10 @@ export const signin = async (
       });
     }
 
-    const token = generateToken(user.id);
+    const token = generateToken({
+      userId: user.id,
+      role: user.role,
+    });
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -235,7 +241,9 @@ export const googleCallback = async (
       role: "ADMIN" | "USER";
     };
 
-const token = generateToken(user.userId);
+const token = generateToken({
+  userId: user.userId,
+  role: user.role,});
 
     res.cookie("token", token, {
       httpOnly: true,
