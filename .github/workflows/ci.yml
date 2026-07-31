@@ -1,0 +1,63 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+
+      - name: Install Client Dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Build Client
+        working-directory: client
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:5000/api
+        run: npm run build
+
+
+
+      - name: Install Server Dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Generate Prisma Client
+        working-directory: server
+        run: npx prisma generate
+
+      - name: Build Server
+        working-directory: server
+        env:
+          JWT_SECRET: test-secret
+          DATABASE_URL: postgresql://user:password@localhost:5432/testdb
+        run: npm run build
+
+
+
+      - name: Build Client Docker Image
+        run: docker build -t taskflow-client ./client
+
+      - name: Build Server Docker Image
+        run: docker build -t taskflow-server ./server
