@@ -47,14 +47,14 @@ export default function DashboardPage() {
 
       <Breadcrumbs />
       
-      <div className="flex items-start justify-between gap-6">
-
-      <div className="flex-1">
-        <HeroSection />
-      </div>
-
-      <PeriodFilter />
-
+      <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+        <div className="flex-1">
+          <HeroSection />
+        </div>
+        
+        <div className="w-full lg:w-auto lg:shrink-0">
+          <PeriodFilter />
+        </div>
       </div>
 
       {/* Statistics */}

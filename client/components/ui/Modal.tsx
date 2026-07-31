@@ -16,41 +16,43 @@ export default function Modal({
   children,
   onClose,
 }: ModalProps) {
-
   if (!open) return null;
 
   return (
     <div
-      className=" fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm "
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
     >
       <div
-        className=" relative w-full max-w-lg rounded-2xl bg-white shadow-2xl "
+        className="
+          w-full
+          max-w-lg
+          rounded-2xl
+          bg-white
+          shadow-xl
+          max-h-[90vh]
+          overflow-hidden
+        "
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-
-        <div
-          className=" flex items-center justify-between border-b border-stone-200 px-6 py-5 "
-        >
-          <h2 className="text-xl font-semibold">
+        <div className="flex items-center justify-between border-b border-stone-200 px-4 py-4 sm:px-6 sm:py-5">
+          <h2 className="text-lg font-semibold sm:text-xl">
             {title}
           </h2>
 
           <button
             onClick={onClose}
-            className=" rounded-lg p-2 transition hover:bg-stone-100 "
+            className="rounded-lg p-2 transition hover:bg-stone-100"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Body */}
-
-        <div className="p-6">
-
+        <div className="overflow-y-auto p-4 sm:p-6 max-h-[calc(90vh-80px)]">
           {children}
-
         </div>
-
       </div>
     </div>
   );

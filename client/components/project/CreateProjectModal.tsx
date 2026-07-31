@@ -173,6 +173,7 @@ export default function CreateProjectModal({
               rounded-xl
               bg-blue-600
               py-3
+              cursor-pointer
               font-semibold
               text-white
               transition

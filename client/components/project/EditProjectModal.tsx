@@ -121,7 +121,7 @@ export default function EditProjectModal({
 
         <div>
 
-          <label className="mb-2 block text-sm font-medium text-stone-700">
+          <label className="mb-2 block text-sm font-medium text-stone-700 ">
 
             Project Color
 
@@ -138,7 +138,7 @@ export default function EditProjectModal({
 
         </div>
 
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 cursor-pointer">
 
           <Button
             variant="secondary"

@@ -53,9 +53,9 @@ const { user } = useAuth();
     >
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-stone-100"
+        className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-stone-100 cursor-pointer"
       >
-        <div className="h-10 w-10 overflow-hidden rounded-full border border-stone-200">
+        <div className="h-10 w-10 overflow-hidden rounded-full border border-stone-200 ">
 
           <img
             src={

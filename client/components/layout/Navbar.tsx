@@ -75,7 +75,7 @@ export default function Navbar() {
 
         <button
           onClick={openCreateTaskModal}
-          className="hidden items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 md:flex"
+          className="hidden items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium cursor-pointer text-white transition hover:bg-blue-700 md:flex"
         >
           <Plus size={18} />
           New Task
