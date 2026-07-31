@@ -15,6 +15,9 @@ import {signupSchema,SignUpFormData,} from "@/validations/auth.schema";
 import { signup } from "@/services/auth.service"
 import { useAuth } from  "@/hooks/useAuth";
 
+import GoogleSignButton from "@/components/auth/GoogleSignButton";
+import Divider from "@/components/auth/Divider";
+
 export default function SignUpPage(){
   const router = useRouter();
 
@@ -52,7 +55,14 @@ export default function SignUpPage(){
 
   return(
     <div className="flex min-h-screen items-center justify-center bg-stone-100 px-4 py-8">
-      <AuthCard title="Sign Up">
+      <AuthCard >
+
+        <div className="mt-6">
+          <GoogleSignButton text="Sign Up with google"/>
+        </div>
+        
+
+        <Divider/>
         <form
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4"
@@ -104,7 +114,7 @@ export default function SignUpPage(){
           </div>
 
           {/*Button*/}
-          <Button type="submit">
+          <Button className="cursor-pointer" type="submit" >
             Sign Up
           </Button>
         </form>
@@ -116,7 +126,7 @@ export default function SignUpPage(){
 
               <button
                 onClick={() => router.push("/signin")}
-                className="font-semibold text-blue-600 transition hover:text-blue-700"
+                className="font-semibold text-blue-600 transition hover:text-blue-700 cursor-pointer"
               >
                 Sign In
               </button>

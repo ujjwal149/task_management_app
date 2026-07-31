@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 type AuthCardProps = {
-  title: string;
+  title?: string;
   children: ReactNode;
 };
 

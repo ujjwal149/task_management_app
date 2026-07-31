@@ -8,77 +8,60 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  
-  name      String
-  email     String    @unique
-  password  String
+  id              String          @id @default(cuid())
 
- avatar    String?
+  name            String
+  email           String          @unique
+  password        String?
+  avatar          String?
+  provider        String          @default("LOCAL")
 
-  role      Role      @default(USER)
+  role            Role            @default(USER)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   createdProjects Project[]
-  createdTasks Task[]
-
-  memberships ProjectMember[]
+  memberships     ProjectMember[]
+  createdTasks    Task[]
 }
 
 model Project {
-  id          String   @id @default(cuid())
-
+  id          String          @id @default(cuid())
   name        String
   description String?
-
-  color       String?   @default("#2563EB")
-
+  color       String?         @default("#2563EB")
   creatorId   String
-  creator     User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-
-  tasks        Task[]
-
-  members ProjectMember[]
-
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-} 
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  creator     User            @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  members     ProjectMember[]
+  tasks       Task[]
+}
 
 model Task {
   id          String       @id @default(cuid())
-
   title       String
   description String?
-
   status      TaskStatus   @default(TODO)
   priority    TaskPriority @default(MEDIUM)
-
   dueDate     DateTime?
-
   creatorId   String
-  creator     User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-
-  projectId   String
-  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  projectId   String
+  creator     User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model ProjectMember {
   id        String   @id @default(cuid())
-
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   projectId String
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
   role      Role     @default(USER)
-
   createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, projectId])
 }

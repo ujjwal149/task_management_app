@@ -18,6 +18,9 @@ import {
 import { signin } from "@/services/auth.service";
 import { useAuth } from "@/hooks/useAuth";
 
+import GoogleSignInButton from "@/components/auth/GoogleSignButton";
+import Divider from "@/components/auth/Divider";
+
 export default function SignInPage() {
   const router = useRouter();
 
@@ -66,13 +69,15 @@ export default function SignInPage() {
             TaskFlow
           </h1>
 
-          <p className="mt-2 text-sm text-stone-500">
-            Welcome back! Sign in to continue.
-          </p>
-
         </div>
 
-        <AuthCard title="Sign In">
+        <AuthCard>
+
+          <div className="mt-6">
+            <GoogleSignInButton text="Continue with google"/>
+          </div>
+
+          <Divider/>
 
           <form
             onSubmit={handleSubmit(onSubmit)}
@@ -125,10 +130,12 @@ export default function SignInPage() {
 
             <Button
               type="submit"
-              className="w-full cursor-pointer"
+              className="w-full  cursor-pointer "
             >
               Sign In
-            </Button>
+            </Button>          
+
+
 
           </form>
 
@@ -140,7 +147,7 @@ export default function SignInPage() {
 
               <button
                 onClick={() => router.push("/signup")}
-                className="font-semibold text-blue-600 transition hover:text-blue-700"
+                className="font-semibold text-blue-600 transition hover:text-blue-700 cursor-pointer "
               >
                 Sign Up
               </button>
@@ -148,6 +155,8 @@ export default function SignInPage() {
             </p>
 
           </div>
+
+
 
         </AuthCard>
 
