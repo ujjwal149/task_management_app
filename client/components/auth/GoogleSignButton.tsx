@@ -1,5 +1,8 @@
 "use client";
 
+import Image from "next/image";
+
+
 type GoogleSignButtonProps = {
   text?: string;  
 }
@@ -16,10 +19,11 @@ export default function GoogleSignButton({
       }}
       className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-stone-300 bg-white px-4 py-3 font-medium text-stone-700 transition hover:bg-stone-50"
     >
-      <img
-        src="https://www.svgrepo.com/show/475656/google-color.svg"
+      <Image
+        src="/google.svg"
         alt="Google"
-        className="h-5 w-5"
+        width={20}
+        height={20}
       />
 
       {text}
