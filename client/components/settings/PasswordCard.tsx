@@ -10,7 +10,7 @@ export default function PasswordCard() {
 
   return (
     <>
-      <div className="rounded-2xl bg-white p-8 shadow-sm">
+      <div className="rounded-2xl bg-white p-8 shadow-sm ">
 
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-stone-900">
@@ -22,13 +22,13 @@ export default function PasswordCard() {
           </p>
         </div>
 
-        <div className="rounded-xl border border-stone-200 p-6">
+        <div className="rounded-xl  p-6">
 
           <div className="flex items-start justify-between">
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 truncate">
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 ">
                 <Lock
                   size={22}
                   className="text-blue-600"
@@ -55,18 +55,7 @@ export default function PasswordCard() {
 
             <button
               onClick={() => setOpen(true)}
-              className="
-                rounded-lg
-                border
-                border-stone-300
-                px-4
-                py-2
-                text-sm
-                font-medium
-                transition
-                hover:bg-stone-100
-                cursor-pointer
-              "
+              className="  rounded-lg  border  border-stone-300  px-4  py-2  text-sm  font-medium  transition  hover:bg-stone-100  cursor-pointer"
             >
               Edit
             </button>

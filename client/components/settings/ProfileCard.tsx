@@ -43,20 +43,20 @@ export default function ProfileCard() {
 
         <div>
 
-          <p className="text-sm font-medium text-stone-500">
+          <p className="text-sm font-medium text-stone-500 ">
             Email
           </p>
 
-          <div className="mt-2 flex items-center justify-between">
-
-            <p className="text-lg font-medium text-stone-900">
+          <div className="mt-2 flex items-start justify-between gap-4">
+            
+            <p className="min-w-0 break-all text-lg text-stone-900">
               {user.email}
             </p>
-
-            <span className="rounded-lg bg-stone-100 px-3 py-1 text-sm font-medium text-stone-500">
+            
+            <span className="shrink-0 rounded-lg bg-stone-100 px-3 py-1 text-sm font-medium text-stone-500">
               Read Only
             </span>
-
+            
           </div>
 
         </div>

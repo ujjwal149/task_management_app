@@ -70,26 +70,10 @@ export default function CreateProjectModal({
 
   return (
     <div
-      className="
-        fixed
-        inset-0
-        z-50
-        flex
-        items-center
-        justify-center
-        bg-black/40
-        backdrop-blur-sm
-      "
+      className="  fixed  inset-0  z-50  flex  items-center  justify-center  bg-black/40  backdrop-blur-sm"
     >
       <div
-        className="
-          w-full
-          max-w-lg
-          rounded-2xl
-          bg-white
-          p-6
-          shadow-2xl
-        "
+        className="  w-full  max-w-lg  rounded-2xl  bg-white  p-6 mx-6 shadow-2xl"
       >
         <div className="mb-6 flex items-center justify-between">
 
@@ -116,16 +100,7 @@ export default function CreateProjectModal({
             <input
               {...register("name")}
               placeholder="My Awesome Project"
-              className="
-                w-full
-                rounded-lg
-                border
-                border-stone-300
-                px-4
-                py-3
-                outline-none
-                focus:border-blue-500
-              "
+              className="  w-full  rounded-lg  border  border-stone-300  px-4  py-3  outline-none  focus:border-blue-500"
             />
 
             {errors.name && (
@@ -146,16 +121,7 @@ export default function CreateProjectModal({
               {...register("description")}
               rows={4}
               placeholder="Write something..."
-              className="
-                w-full
-                rounded-lg
-                border
-                border-stone-300
-                px-4
-                py-3
-                outline-none
-                focus:border-blue-500
-              "
+              className="  w-full  rounded-lg  border  border-stone-300  px-4  py-3  outline-none  focus:border-blue-500"
             />
 
             {errors.description && (

@@ -42,41 +42,45 @@ export default function TeamCard({
   };
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-      <div>
-        <h3 className="font-semibold text-stone-900">
-          {member.user.name}
-        </h3>
+  {/* Left */}
+  <div className="min-w-0">
 
-        <p className="text-sm text-stone-500">
-          {member.user.email}
-        </p>
-      </div>
+    <h3 className="font-semibold text-stone-900">
+      {member.user.name}
+    </h3>
 
-      <div className="flex items-center gap-4">
+    <p className="break-all text-sm text-stone-500">
+      {member.user.email}
+    </p>
 
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold ${
-            member.role === "ADMIN"
-              ? "bg-red-100 text-red-600"
-              : "bg-blue-100 text-blue-600"
-          }`}
-        >
-          {member.role}
-        </span>
+  </div>
 
-        {member.role !== "ADMIN" && (
-          <button
-            onClick={handleRemove}
-            className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
-          >
-            <Trash2 size={18} />
-          </button>
-        )}
+  {/* Right */}
+  <div className="flex items-center justify-between sm:justify-end gap-4">
 
-      </div>
+    <span
+      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+        member.role === "ADMIN"
+          ? "bg-red-100 text-red-600"
+          : "bg-blue-100 text-blue-600"
+      }`}
+    >
+      {member.role}
+    </span>
 
-    </div>
-  );
+    {member.role !== "ADMIN" && (
+      <button
+        onClick={handleRemove}
+        className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
+      >
+        <Trash2 size={18} />
+      </button>
+    )}
+
+  </div>
+
+</div>
+  )
 }
