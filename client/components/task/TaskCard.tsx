@@ -17,18 +17,9 @@ export default function TaskCard({
 
   return (
     <div
-      className="
-        rounded-2xl
-        border
-        border-stone-200
-        bg-white
-        p-6
-        shadow-sm
-        transition
-        hover:-translate-y-1
-        hover:shadow-lg
-      "
-    >
+      className=" rounded-2xl border border-stone-200 bg-white p-6 
+                shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+      >
 
       {/* Project */}
 

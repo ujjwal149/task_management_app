@@ -7,6 +7,7 @@ import TaskModal from "../task/TaskModal";
 import { useUIStore } from "@/store/ui.store";
 
 import DeleteTaskModal from "../task/DeleteTaskModal";
+import FloatingActionButton from "@/components/layout/FloatingActionButton";
 
 import { deleteTask } from "@/services/task.service";
 import { useTaskStore } from "@/store/task.store";
@@ -66,6 +67,8 @@ export default function DashboardShell({
           {children}
 
         </main>
+
+        <FloatingActionButton/>
 
         <TaskModal
           open={taskModalOpen}

@@ -79,38 +79,34 @@ const { user } = useAuth();
           <div className="border-b border-stone-200 p-4">
 
             <div className="flex items-center gap-3 p-4">
-
-              <img
-                src={
-                  user?.avatar ??
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    user?.name ?? "User"
-                  )}`
-                }
-                alt={user?.name}
-                className="h-12 w-12 flex-shrink-0 rounded-full object-cover"
-              />
-            
-              <div className="min-w-0 flex-1">
+                <img
+                  src={
+                    user?.avatar ??
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      user?.name ?? "User"
+                    )}`
+                  }
+                  alt={user?.name}
+                  className="h-12 w-12 flex-shrink-0 rounded-full object-cover"
+                />
               
-                <p className="truncate font-semibold text-stone-900">
-                  {user?.name}
-                </p>
-              
-                <p
-                  className="truncate text-sm text-stone-500"
-                  title={user?.email}
-                >
-                  {user?.email}
-                </p>
-              
-                <p className="mt-1 text-xs font-medium text-blue-600">
-                  {user?.role}
-                </p>
-              
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-stone-900 truncate">
+                    {user?.name}
+                  </p>
+                
+                  <p
+                    className="text-sm text-stone-500 break-all truncate"
+                    title={user?.email}
+                  >
+                    {user?.email}
+                  </p>
+                
+                  <p className="mt-1 text-xs font-medium text-blue-600">
+                    {user?.role}
+                  </p>
+                </div>
               </div>
-              
-            </div>
 
           </div>
 

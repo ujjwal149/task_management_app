@@ -4,7 +4,7 @@ import { useState,useEffect } from "react";
 
 import { useProjects } from "@/hooks/useProject";
 
-import { useProjectStore } from "@/store/project.store";
+
 
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
@@ -19,6 +19,8 @@ import { createTask,updateTask} from "@/services/task.service";
 import { useTaskStore } from "@/store/task.store";
 
 import {Task} from "@/types/task.types";
+
+import DateTimePicker from "@/components/ui/DateTimePicker";
 
 import toast from "react-hot-toast";
 
@@ -36,18 +38,14 @@ import toast from "react-hot-toast";
     
   }: TaskModalProps) {
 
-    const addTask = useTaskStore(
-      (state) => state.addTask
-    );
-
+    
     const [submitting, setSubmitting] = useState(false);
+
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
     const isEditing = Boolean(task);
 
-    const currentProject =
-    useProjectStore(
-      (state) => state.currentProject
-    );
+    
 
     const { projects, fetchProjects } = useProjects();
 
@@ -55,52 +53,40 @@ import toast from "react-hot-toast";
       register,
       handleSubmit,
       reset,
+      setValue,
       formState: { errors },
     } = useForm<CreateTaskInput>({
       resolver: zodResolver(createTaskSchema),
     });
 
     useEffect(() => {
+      fetchProjects();
 
-    fetchProjects();
-
-    if (task) {
-
-      reset({
-        title: task.title,
-        description: task.description ?? "",
-        priority: task.priority,
-
-        dueDate: task.dueDate
-          ? new Date(task.dueDate)
-              .toISOString()
-              .slice(0, 16)
-
-          : "",
-
-        projectId: task.projectId,
-
-      });
-
-    } else {
-
-      reset({
-
-        title: "",
-
-        description: "",
-
-        priority: "MEDIUM",
-
-        dueDate: "",
-
-        projectId: "",
-
-      });
-
-    }
-
-    },[task, reset, fetchProjects]);
+      if (task) {
+        const due =
+          task.dueDate ? new Date(task.dueDate) : null;
+      
+        setSelectedDate(due);
+      
+        reset({
+          title: task.title,
+          description: task.description ?? "",
+          priority: task.priority,
+          dueDate: due ? due.toISOString() : "",
+          projectId: task.projectId,
+        });
+      } else {
+        setSelectedDate(null);
+      
+        reset({
+          title: "",
+          description: "",
+          priority: "MEDIUM",
+          dueDate: "",
+          projectId: "",
+        });
+      }
+    }, [task, reset, fetchProjects]);
 
   const onSubmit = async (
     data: CreateTaskInput
@@ -153,6 +139,7 @@ import toast from "react-hot-toast";
     dueDate: "",
     });
 
+    setSelectedDate(null);
     onClose();
 
   } catch (error: any) {
@@ -233,17 +220,8 @@ import toast from "react-hot-toast";
 
             <select
               {...register("projectId")}
-              className="
-                w-full
-                rounded-xl
-                border
-                border-stone-300
-                px-4
-                py-3
-                outline-none
-                transition
-                focus:border-blue-600
-              "
+              className="  w-full  rounded-xl  border  border-stone-300  px-4  py-3  
+                      outline-none  transition  focus:border-blue-600"
             >
             
               <option value="">
@@ -283,7 +261,8 @@ import toast from "react-hot-toast";
 
             <select
               {...register("priority")}
-              className="  w-full  rounded-xl  border  border-stone-300  px-4  py-3  outline-none  transition  focus:border-blue-600"
+              className="  w-full  rounded-xl  border  border-stone-300  px-4  py-3 
+                     outline-none  transition  focus:border-blue-600"
             >
               <option value="LOW">Low</option>
               <option value="MEDIUM">Medium</option>
@@ -296,13 +275,20 @@ import toast from "react-hot-toast";
 
           <div>
 
-            <label className="mb-2 block text-sm font-medium text-stone-700">
+            <label className="mb-2 block text-sm font-medium text-stone-700 ">
               Due Date
             </label>
 
-            <Input
-              type="datetime-local"
-              {...register("dueDate")}
+           <DateTimePicker
+              value={selectedDate}
+              onChange={(date) => {
+                setSelectedDate(date);
+              
+                setValue(
+                  "dueDate",
+                  date ? date.toISOString() : ""
+                );
+              }}
             />
 
           </div>
@@ -316,7 +302,13 @@ import toast from "react-hot-toast";
             <Button
               type="button"
               variant="secondary"
-              onClick={onClose}
+              onClick={() => {
+                reset();
+                            
+                setSelectedDate(null);
+                            
+                onClose();
+              }}
               disabled={submitting}
             >
               Cancel

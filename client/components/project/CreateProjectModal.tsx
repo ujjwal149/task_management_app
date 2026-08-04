@@ -168,19 +168,10 @@ export default function CreateProjectModal({
 
           <button
             disabled={loading}
-            className="
-              w-full
-              rounded-xl
-              bg-blue-600
-              py-3
-              cursor-pointer
-              font-semibold
-              text-white
-              transition
-              hover:bg-blue-700
-              disabled:opacity-60
-            "
-          >
+            className="  w-full  rounded-xl  bg-blue-600  py-3 
+                   cursor-pointer  font-semibold  text-white  transition
+                     hover:bg-blue-700  disabled:opacity-60"
+            >
             {loading
               ? "Creating..."
               : "Create Project"}
