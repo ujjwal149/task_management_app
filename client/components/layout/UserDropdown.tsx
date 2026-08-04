@@ -78,7 +78,7 @@ const { user } = useAuth();
 
           <div className="border-b border-stone-200 p-4">
 
-            <div className="flex items-center gap-3  p-4">
+            <div className="flex items-center gap-3 p-4">
 
               <img
                 src={
@@ -88,16 +88,19 @@ const { user } = useAuth();
                   )}`
                 }
                 alt={user?.name}
-                className="h-12 w-12 rounded-full object-cover"
+                className="h-12 w-12 flex-shrink-0 rounded-full object-cover"
               />
-
-              <div>
+            
+              <div className="min-w-0 flex-1">
               
-                <p className="font-semibold text-stone-900">
+                <p className="truncate font-semibold text-stone-900">
                   {user?.name}
                 </p>
               
-                <p className="text-sm text-stone-500">
+                <p
+                  className="truncate text-sm text-stone-500"
+                  title={user?.email}
+                >
                   {user?.email}
                 </p>
               
