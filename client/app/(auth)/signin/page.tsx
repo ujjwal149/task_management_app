@@ -1,19 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect,useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import {Eye,EyeOff} from "lucide-react"
+
 import AuthCard from "@/components/ui/AuthCard";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
-import {
-  signInSchema,
-  SignInFormData,
-} from "@/validations/auth.schema";
+import { signInSchema, SignInFormData,} from "@/validations/auth.schema";
 
 import { signin } from "@/services/auth.service";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,6 +25,8 @@ export default function SignInPage() {
 
   const { user, loading, setUser } = useAuth();
 
+  const [showPassword,setShowPassword] = useState(false);
+
   useEffect(() => {
     if (!loading && user) {
       router.replace("/dashboard");
@@ -35,6 +36,7 @@ export default function SignInPage() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
@@ -48,6 +50,14 @@ export default function SignInPage() {
 
       router.replace("/dashboard");
     } catch (error: any) {
+      const backendMessage = error.response?.data?.message || 
+            "Something went wrong";
+        
+      setError("password",{
+        type: "server",
+        message: backendMessage,
+      });
+
       console.log(error.response?.data);
     }
   };
@@ -78,6 +88,15 @@ export default function SignInPage() {
           </div>
 
           <Divider/>
+
+            <div className="relative h-6 w-full">
+              {errors.password && (
+                <p className="absolute inset-x-0 top-0 text-center text-sm font-medium text-red-500 animate-fadeIn">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
 
           <form
             onSubmit={handleSubmit(onSubmit)}
@@ -114,18 +133,31 @@ export default function SignInPage() {
                 Password
               </label>
 
+              <div className="relative">
               <Input
-                type="password"
+                type={showPassword? "text" : "password"}
                 placeholder="••••••••"
+                className="pr-10"
                 {...register("password")}
               />
 
-              {errors.password && (
-                <p className="mt-2 text-sm text-red-500">
-                  {errors.password.message}
-                </p>
-              )}
+              <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex 
+              items-center text-stone-400 hover:text-stone-600 cursor-pointer select-none"
+              aria-label={showPassword ? "Hide Password " : "Show Password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5"/>
+                ):(
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
 
+              </div>
+
+              
             </div>
 
             <Button

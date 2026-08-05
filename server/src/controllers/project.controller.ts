@@ -68,24 +68,41 @@ export const getProjects = async (
     const userId = req.user!.userId;
 
     const projects =
-      await prisma.project.findMany({
+    await prisma.project.findMany({
 
-        where: {
+    where: {
+
+      OR: [
+
+        {
           creatorId: userId,
         },
-        include:{
-          _count:{
-            select:{
-              tasks: true,
+
+        {
+          members: {
+            some: {
+              userId,
             },
           },
         },
 
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+      ],
 
+    },
+
+    include: {
+      _count: {
+        select: {
+          tasks: true,
+        },
+      },
+    },
+
+    orderBy: {
+      createdAt: "desc",
+    },
+
+  });
     return res.status(200).json(projects);
 
   } catch (error) {
