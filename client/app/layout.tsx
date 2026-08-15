@@ -18,10 +18,40 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Task Management",
-  description: "Task Management Application",
-};
+  metadataBase: new URL("https://taskfloo.in"),
 
+  title: {
+    default: "TaskFlow - Simple Task Management",
+    template: "%s | TaskFlow",
+  },
+
+  description:
+    "TaskFlow is a simple task management application to organize, manage, and track your tasks efficiently.",
+
+  keywords: [
+    "task management",
+    "task manager",
+    "productivity",
+    "manage tasks",
+    "TaskFlow",
+  ],
+
+  authors: [{ name: "TaskFlow" }],
+
+  robots: {
+    index: true,
+    follow: true,
+  },
+
+  openGraph: {
+    title: "TaskFlow - Simple Task Management",
+    description:
+      "Organize, manage, and track your tasks efficiently with TaskFlow.",
+    url: "https://taskfloo.in",
+    siteName: "TaskFlow",
+    type: "website",
+  },
+};
 export default function RootLayout({
   children,
 }: Readonly<{
