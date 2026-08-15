@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 import { Toaster } from "react-hot-toast";
@@ -35,19 +36,34 @@ export default function RootLayout({
         <AuthProvider>
           {children}
 
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  borderRadius: "12px",
-                  background: "#1E293B",
-                  color: "#fff",
-                },
-              }}
-            />
-            
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                borderRadius: "12px",
+                background: "#1E293B",
+                color: "#fff",
+              },
+            }}
+          />
         </AuthProvider>
+
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-MCJQRR8CYT"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-MCJQRR8CYT');
+          `}
+        </Script>
       </body>
     </html>
   );
