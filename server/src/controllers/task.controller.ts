@@ -1,8 +1,13 @@
 import { Request, Response } from "express";
 import prisma from "../lib/prisma";
 
+import { sendToProjectId, sendToUser } from "../websocket/websocket.server"
+import { WS_EVENTS } from "../websocket/events";
+
 import { createTaskSchema } from "../validations/task.schema";
 import { updateTaskSchema } from "../validations/updateTask.schema";
+
+
 
 
 /* Create Task */
@@ -38,6 +43,15 @@ export const createTask = async (
       },
     });
 
+    // Notify connected project memeber task added
+    await sendToProjectId(
+      task.projectId,
+      WS_EVENTS.TASK_CREATED,
+      {
+        task,
+      }
+    );
+
     return res.status(201).json({
       message: "Task created successfully.",
       task,
@@ -52,9 +66,7 @@ export const createTask = async (
 };
 
 
-/* Get My Tasks */
-
-
+//-----------Get Project Tasks--------------//
 export const getMyTasks = async (
   req: Request,
   res: Response
@@ -62,75 +74,86 @@ export const getMyTasks = async (
   try {
     const userId = req.user!.userId;
 
+    const projectId = req.query.projectId as string | undefined;
+
+    // projectId is required
+    if (!projectId) {
+      return res.status(400).json({
+        message: "projectId is required.",
+      });
+    }
+
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 9;
 
-    const projectId = req.query.projectId as string | undefined;
-
     const skip = (page - 1) * limit;
 
-    const [tasks, total] = await Promise.all([
-      prisma.task.findMany({
-        where: {
 
-        creatorId: userId,
-
-        ...(projectId && {
-        
-            projectId,
-        
-        }),
-      
-    },
-      
-        include: {
-          project: true,
-        },
-      
-        orderBy: {
-          createdAt: "desc",
-        },
-      
-        skip,
-        take: limit,
-      }),
-
-      prisma.task.count({
-
+    // Check whether the user belongs to the project
+    const membership = await prisma.projectMember.findUnique({
       where: {
-      
-        creatorId: userId,
-      
-        ...(projectId && {
-        
+        userId_projectId: {
+          userId,
           projectId,
+        },
+      },
+    });
+
+
+    if (!membership) {
+      return res.status(403).json({
+        message: "You are not a member of this project.",
+      });
+    }
+
+
+    // Get all tasks belonging to this project
+    const [tasks, total] = await Promise.all([
+        prisma.task.findMany({
+          where: {
+            projectId,
+          },
         
+          include: {
+            project: true,
+          },
+        
+          orderBy: {
+            createdAt: "desc",
+          },
+        
+          skip,
+          take: limit,
         }),
       
-      },
+        prisma.task.count({
+          where: {
+            projectId,
+          },
+        }),
+      ]);
     
-    }),
-    ]);
-
-    return res.status(200).json({
-      tasks,
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      message: "Internal server error.",
-    });
-  }
-};
+    
+      return res.status(200).json({
+        tasks,
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      });
+    
+    } catch (error) {
+      console.error(error);
+    
+      return res.status(500).json({
+        message: "Internal server error.",
+      });
+    }
+  };
 
 
-/* Update Task */ 
+
+//------------ Update Task------------------// 
 
 
 export const updateTask = async (
@@ -187,6 +210,15 @@ export const updateTask = async (
       },
       });
 
+    //Notify connected project member task updated
+    await sendToProjectId(
+      updatedTask.projectId,
+      WS_EVENTS.TASK_UPDATED,
+      {
+        task: updatedTask,
+      }
+    );
+
     return res.status(200).json({
       message: "Task updated successfully.",
       task: updatedTask,
@@ -200,7 +232,7 @@ export const updateTask = async (
   }
 };
 
-/* Delete Task */
+//-----------Delete Task-----------//
 
 export const deleteTask = async (
   req: Request<{ taskId: string }>,
@@ -234,6 +266,15 @@ export const deleteTask = async (
         id: taskId,
       },
     });
+
+     // Notify connected project memeber task deleted
+    await sendToProjectId(
+      deletedTask.projectId,
+      WS_EVENTS.TASK_DELETED,
+      {
+        taskId: deletedTask.id,
+      }
+    );
 
     return res.status(200).json({
       message: "Task deleted successfully.",

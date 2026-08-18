@@ -25,6 +25,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "streamifier": "^0.1.1",
+    "ws": "^8.21.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -39,6 +40,7 @@
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.17",
     "@types/streamifier": "^0.1.2",
+    "@types/ws": "^8.18.1",
     "nodemon": "^3.1.14",
     "prettier": "^3.8.4",
     "prisma": "^6.19.0",

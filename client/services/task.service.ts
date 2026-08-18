@@ -15,7 +15,7 @@ export const getMyTasks = async (
 
   limit = 9,
 
-  projectId?: string,
+  projectId: string,
 ) => {
 
   const query = new URLSearchParams({
@@ -23,14 +23,10 @@ export const getMyTasks = async (
   page: String(page),
 
   limit: String(limit),
-
+  
+  projectId,
 });
 
-if (projectId) {
-
-  query.append("projectId", projectId);
-
-}
 
 const response =
   await api.get<GetTasksResponse>(

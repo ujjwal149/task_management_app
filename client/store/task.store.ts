@@ -25,7 +25,7 @@ type TaskStore = {
   setPage: (page: number) => void;
 
   // Actions
-  fetchTasks: (projectId?: string) => Promise<void>;
+  fetchTasks: () => Promise<void>;
 
   setTasks: (tasks: Task[]) => void;
 
@@ -98,6 +98,20 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         .getState()
         .currentProject;
 
+    if (!currentProject) {
+      console.log(
+          "⚠️ Cannot fetch tasks: No project selected"
+        );
+
+      set({
+          tasks: [],
+          total: 0,
+          totalPages: 1,
+        });
+
+        return;
+      }
+
     const data = await getMyTasks(
 
       page,
@@ -146,9 +160,17 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     }),
 
   addTask: (task) =>
-    set((state) => ({
-      tasks: [task, ...state.tasks],
-    })),
+    set((state) => {
+      const exist = state.tasks.some(
+        (existingTask) => existingTask.id === task.id
+      );  
+      if(exist){
+        return state;
+      } 
+      return{
+        tasks: [task, ...state.tasks],
+      };
+    }),
 
   updateTask: (updatedTask) =>
     set((state) => ({

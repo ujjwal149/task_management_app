@@ -13,10 +13,6 @@ import teamRoutes from "./routes/team.routes";
 
 const app = express();
 
-/* ----------------------------- */
-/* Middlewares */
-/* ----------------------------- */
-
 app.use(express.json());
 
 app.use(cookieParser());
@@ -28,17 +24,7 @@ app.use(
   })
 );
 
-/*
-  We ONLY use passport to authenticate Google.
-
-  We DO NOT use passport sessions because
-  the project already uses JWT cookies.
-*/
 app.use(passport.initialize());
-
-/* ----------------------------- */
-/* Health Check */
-/* ----------------------------- */
 
 app.get("/", (req, res) => {
   res.json({
@@ -46,9 +32,6 @@ app.get("/", (req, res) => {
   });
 });
 
-/* ----------------------------- */
-/* Routes */
-/* ----------------------------- */
 
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);

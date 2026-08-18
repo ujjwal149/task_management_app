@@ -12,4 +12,4 @@ router.put("/:taskId",authMiddleware,updateTask);
 router.delete("/:taskId",authMiddleware,deleteTask);
 router.get("/all",authMiddleware,adminMiddleware,getAllTask);
 
-export default router; 
+export default router;  

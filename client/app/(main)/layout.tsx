@@ -1,5 +1,6 @@
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardShell from "@/components/layout/DashboardShell";
+import WebSocketProvider from "@/components/websocket/WebSocketProvider";
 
 import type { Metadata } from "next";
 
@@ -17,9 +18,11 @@ export default function MainLayout({
 }) {
   return (
     <ProtectedRoute>
-      <DashboardShell>
-        {children}
-      </DashboardShell>
+      <WebSocketProvider>
+        <DashboardShell>
+          {children}
+        </DashboardShell>
+      </WebSocketProvider>
     </ProtectedRoute>
   );
 }
