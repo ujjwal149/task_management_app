@@ -1,6 +1,12 @@
 export const WS_EVENTS = {
   CONNECTION_SUCCESS: "connection:success",
 
+  JOIN_PROJECT: "project:join",
+  LEAVE_PROJECT: "project:leave",
+  
+  PROJECT_JOINED: "project:joined",
+  PROJECT_LEFT: "project:left",
+
   TASK_CREATED: "task:created",
   TASK_UPDATED: "task:updated",
   TASK_DELETED: "task:deleted",
@@ -12,4 +18,6 @@ export const WS_EVENTS = {
   TEAM_MEMBER_REMOVED: "team:member-removed",
 
   TEST_BROADCAST: "test:broadcast",
+
+
 } as const;

@@ -4,6 +4,9 @@ let socket: WebSocket | null = null;
 
 let connectionId = 0;
 
+// Currently joined project room
+let currentProjectId: string | null = null;
+
 export const connectWebSocket = () => {
   connectionId++;
 
@@ -65,6 +68,14 @@ export const connectWebSocket = () => {
           );
 
           break;
+        
+        case "project:joined":
+
+          console.log(
+            `✅ Joined project room: ${message.projectId}`
+          );
+        
+          break;
 
 
         case "task:created":
@@ -106,6 +117,8 @@ export const connectWebSocket = () => {
           );
 
           break;
+
+        
 
 
         default:
@@ -201,10 +214,11 @@ export const disconnectWebSocket = () => {
     `🔌 Disconnecting WebSocket. State: ${ws.readyState}`
   );
 
-  // Clear our reference immediately.
   socket = null;
 
-  // Close OPEN or CONNECTING sockets.
+  // Reset current room
+  currentProjectId = null;
+
   if (
     ws.readyState === WebSocket.OPEN ||
     ws.readyState === WebSocket.CONNECTING
@@ -214,4 +228,136 @@ export const disconnectWebSocket = () => {
 
   }
 
+};
+
+//-----------------Join Project------------------//
+export const joinProject = (
+  projectId: string
+) => {
+
+  if (!socket) {
+    console.error(
+      "❌ Cannot join project. WebSocket does not exist."
+    );
+
+    return;
+  }
+
+  const sendJoinMessage = () => {
+
+    
+  //Leave previous project room
+    if (
+      currentProjectId &&
+      currentProjectId !== projectId
+    ) {
+
+      const leaveMessage = JSON.stringify({
+        event: "project:leave",
+        data: {
+          projectId: currentProjectId,
+        },
+      });
+
+      socket?.send(leaveMessage);
+
+      console.log(
+        `📤 Leaving previous project room: ${currentProjectId}`
+      );
+
+      currentProjectId = null;
+    }
+
+
+  // Join new project room
+    const joinMessage = JSON.stringify({
+      event: "project:join",
+      data: {
+        projectId,
+      },
+    });
+
+    socket?.send(joinMessage);
+
+    console.log(
+      `📤 Joining project room: ${projectId}`
+    );
+
+    currentProjectId = projectId;
+  };
+
+
+  // WebSocket already connected
+  if (
+    socket.readyState === WebSocket.OPEN
+  ) {
+
+    sendJoinMessage();
+
+    return;
+  }
+
+  // WebSocket still connecting
+  if (
+    socket.readyState === WebSocket.CONNECTING
+  ) {
+
+    console.log(
+      `⏳ Waiting for WebSocket connection before joining project: ${projectId}`
+    );
+
+    socket.addEventListener(
+      "open",
+      sendJoinMessage,
+      {
+        once: true,
+      }
+    );
+
+    return;
+  }
+
+
+  console.error(
+    "❌ Cannot join project. WebSocket is not open."
+  );
+};
+
+//----------Leave Project---------------------------//
+export const leaveProject = (
+  projectId: string
+) => {
+
+  if (
+    !socket ||
+    socket.readyState !== WebSocket.OPEN
+  ) {
+
+    console.error(
+      "❌ Cannot leave project. WebSocket is not connected."
+    );
+
+    return;
+  }
+
+
+  const message = JSON.stringify({
+    event: "project:leave",
+    data: {
+      projectId,
+    },
+  });
+
+
+  socket.send(message);
+
+
+  console.log(
+    `📤 Leaving project room: ${projectId}`
+  );
+
+
+  if (currentProjectId === projectId) {
+    currentProjectId = null;
+  }
 };

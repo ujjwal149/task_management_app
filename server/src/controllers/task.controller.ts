@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import prisma from "../lib/prisma";
 
-import { sendToProjectId, sendToUser } from "../websocket/websocket.server"
+import {
+  sendToProjectRoom,
+} from "../websocket/websocket.server";
+
 import { WS_EVENTS } from "../websocket/events";
 
 import { createTaskSchema } from "../validations/task.schema";
@@ -10,8 +13,7 @@ import { updateTaskSchema } from "../validations/updateTask.schema";
 
 
 
-/* Create Task */
-
+//---------------- Create Task----------------//
 export const createTask = async (
   req: Request,
   res: Response
@@ -43,14 +45,14 @@ export const createTask = async (
       },
     });
 
-    // Notify connected project memeber task added
-    await sendToProjectId(
-      task.projectId,
-      WS_EVENTS.TASK_CREATED,
-      {
-        task,
-      }
-    );
+  // Notify connected project memeber task added
+   sendToProjectRoom(
+    task.projectId,
+    WS_EVENTS.TASK_CREATED,
+    {
+      task,
+    }
+  );
 
     return res.status(201).json({
       message: "Task created successfully.",
@@ -76,7 +78,7 @@ export const getMyTasks = async (
 
     const projectId = req.query.projectId as string | undefined;
 
-    // projectId is required
+   // projectId is required
     if (!projectId) {
       return res.status(400).json({
         message: "projectId is required.",
@@ -113,27 +115,27 @@ export const getMyTasks = async (
           where: {
             projectId,
           },
-        
+
           include: {
             project: true,
           },
-        
+
           orderBy: {
             createdAt: "desc",
           },
-        
+
           skip,
           take: limit,
         }),
-      
+
         prisma.task.count({
           where: {
             projectId,
           },
         }),
       ]);
-    
-    
+
+
       return res.status(200).json({
         tasks,
         page,
@@ -141,10 +143,10 @@ export const getMyTasks = async (
         total,
         totalPages: Math.ceil(total / limit),
       });
-    
+
     } catch (error) {
       console.error(error);
-    
+
       return res.status(500).json({
         message: "Internal server error.",
       });
@@ -154,8 +156,6 @@ export const getMyTasks = async (
 
 
 //------------ Update Task------------------// 
-
-
 export const updateTask = async (
   req: Request<{ taskId: string }>,
   res: Response
@@ -211,7 +211,7 @@ export const updateTask = async (
       });
 
     //Notify connected project member task updated
-    await sendToProjectId(
+    sendToProjectRoom(
       updatedTask.projectId,
       WS_EVENTS.TASK_UPDATED,
       {
@@ -232,8 +232,7 @@ export const updateTask = async (
   }
 };
 
-//-----------Delete Task-----------//
-
+//-----------------Delete Task--------------------//
 export const deleteTask = async (
   req: Request<{ taskId: string }>,
   res: Response
@@ -268,7 +267,7 @@ export const deleteTask = async (
     });
 
      // Notify connected project memeber task deleted
-    await sendToProjectId(
+    sendToProjectRoom(
       deletedTask.projectId,
       WS_EVENTS.TASK_DELETED,
       {
@@ -289,8 +288,7 @@ export const deleteTask = async (
   }
 };
 
-/* Get All Tasks (Admin) */
-
+//-------------------Get All Tasks (Admin)-------------//
 export const getAllTask = async (
   req: Request,
   res: Response
