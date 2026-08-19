@@ -35,7 +35,10 @@ export const connectWebSocket = () => {
   }
 
   // Create a new socket
-  const ws = new WebSocket("ws://localhost:5000");
+  const WS_URL =
+    process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:5000";
+
+  const ws = new WebSocket(WS_URL);
 
   socket = ws;
 
@@ -298,6 +301,7 @@ export const joinProject = (
   }
 
   // WebSocket still connecting
+
   if (
     socket.readyState === WebSocket.CONNECTING
   ) {
