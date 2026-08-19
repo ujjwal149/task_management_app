@@ -35,26 +35,15 @@ export const connectWebSocket = () => {
   }
 
   // Create a new socket
-  const isClient = typeof window !== "undefined";
+  const WS_URL =
+  process.env.NEXT_PUBLIC_WS_URL ||
+  (window.location.protocol === "https:"
+    ? `wss://${window.location.host}/ws`
+    : "ws://localhost:5000");
 
-    const getWsUrl = () => {
-    
-      if (process.env.NEXT_PUBLIC_WS_URL) {
-        return process.env.NEXT_PUBLIC_WS_URL;
-      }
-    
-      if (isClient && window.location.protocol === "https:") {
-        return `wss://${window.location.host}/api/`;
-      }
-    
-    
-      return "ws://localhost:5000";
-    };
-    
-    const WS_URL = getWsUrl();
-    const ws = new WebSocket(WS_URL);
-    
-      
+const ws = new WebSocket(WS_URL);
+
+
 
   socket = ws;
 
