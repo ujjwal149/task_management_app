@@ -29,13 +29,7 @@ export default function TaskList() {
     fetchTasks();
   }, [page,fetchTasks]);
 
-  if (loading) {
-  return (
-    <p className="text-center text-stone-500">
-      Loading tasks...
-    </p>
-  );
-}
+  
 
   const filteredTasks = tasks.filter((task) => {
   const query = searchQuery.toLowerCase();

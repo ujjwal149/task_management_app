@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/hooks/useAuth";
 
+import AppLoader from "@/components/loading/AppLoader";
+
 type ProtectedRouteProps = {
   children: React.ReactNode;
 };
@@ -23,11 +25,7 @@ export default function ProtectedRoute({
   }, [loading, user, router]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
+    return <AppLoader />;
   }
 
   if (!user) {

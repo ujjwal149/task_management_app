@@ -4,6 +4,8 @@ import { useEffect, useMemo } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 
+import CalendarSkeleton from "@/components/loading/CalendarSkeleton";
+
 
 import { useUIStore } from "@/store/ui.store";
 
@@ -35,11 +37,7 @@ export default function CalendarView() {
   }, [tasks]);
 
   if (loading) {
-    return (
-      <div className="py-20 text-center text-stone-500">
-        Loading calendar...
-      </div>
-    );
+    return <CalendarSkeleton />;
   }
 
   return (

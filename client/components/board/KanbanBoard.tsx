@@ -13,7 +13,8 @@ import { TaskStatus } from "@/types/task.types";
 import { useTaskStore } from "@/store/task.store";
 
 import KanbanColumn from "./KanbanColumn";
-import { div } from "framer-motion/client";
+
+import BoardSkeleton from "@/components/loading/BoardSkeleton";
 
 export default function KanbanBoard() {
 
@@ -71,11 +72,7 @@ export default function KanbanBoard() {
 };
 
   if (loading) {
-    return (
-      <div className="py-20 text-center text-stone-500">
-        Loading Board...
-      </div>
-    );
+    return <BoardSkeleton />;
   }
 
   return (

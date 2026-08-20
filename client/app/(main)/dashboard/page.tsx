@@ -23,6 +23,8 @@ import PageTransition from "@/components/layout/PageTransition";
 
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 
+import DashboardSkeleton from "@/components/loading/DashboardSkeleton";
+
 
 
 
@@ -40,8 +42,8 @@ export default function DashboardPage() {
   }, [fetchDashboard, period]);
   
   if (loading || !overview) {
-    return <p>Loading dashboard...</p>;
-  }
+    return <DashboardSkeleton />;
+}
 
 
   return (
@@ -90,21 +92,21 @@ export default function DashboardPage() {
         
       </div>
 
-<div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid gap-6 lg:grid-cols-3">
 
-  {/* Left */}
+    {/* Left */}
 
-  <div className="space-y-6 lg:col-span-2">
+    <div className="space-y-6 lg:col-span-2">
 
     <div className="grid gap-6 lg:grid-cols-2">
 
-  <WeeklyActivity />
+      <WeeklyActivity />
 
-  <StatusChart />
+      <StatusChart />
 
-</div>
+    </div>
 
-<PriorityChart />
+  <PriorityChart />
 
     <div className="grid gap-6 lg:grid-cols-2">
 
