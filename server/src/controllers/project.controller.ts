@@ -162,6 +162,67 @@ export const getProjectById = async (
   }
 };
 
+// Get Project Members
+export const getProjectMembers = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const userId = req.user!.userId;
+
+    const projectId = req.params.id as string;
+
+    // First make sure current user belongs to the project
+    const membership =
+      await prisma.projectMember.findUnique({
+        where: {
+          userId_projectId: {
+            userId,
+            projectId,
+          },
+        },
+      });
+
+    if (!membership) {
+      return res.status(403).json({
+        message:
+          "You are not a member of this project.",
+      });
+    }
+
+    const members =
+      await prisma.projectMember.findMany({
+        where: {
+          projectId,
+        },
+
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+            },
+          },
+        },
+
+        orderBy: {
+          createdAt: "asc",
+        },
+      });
+
+    return res.status(200).json(members);
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message:
+        "Failed to fetch project members.",
+    });
+  }
+};
 
 //Update Project
 export const updateProject = async (
@@ -231,6 +292,7 @@ export const updateProject = async (
   }
 };
 
+//Delete Project 
 export const deleteProject = async (
   req: Request,
   res: Response

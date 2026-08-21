@@ -10,27 +10,30 @@ export type TaskPriority =
   | "MEDIUM"
   | "HIGH";
 
+export interface TaskUser {
+  id: string;
+  name: string;
+  avatar?: string | null;
+}
+
 export interface Task {
   id: string;
-
   title: string;
-
   description?: string | null;
-
   status: TaskStatus;
-
   priority: TaskPriority;
-
   dueDate?: string | null;
 
   creatorId: string;
+  creator: TaskUser;
+
+  assignToId?: string | null;
+  assignTo?: TaskUser | null;
 
   projectId: string;
-
   project: Project;
 
   createdAt: string;
-
   updatedAt: string;
 }
 

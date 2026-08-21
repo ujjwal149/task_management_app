@@ -25,6 +25,10 @@ export const createTaskSchema = z.object({
   projectId: z
     .string()
     .min(1, "Please select a project."),
+  
+   assignToId: z
+    .string()
+    .min(1, "Please select a user to assign the task."),
 });
 
 export type CreateTaskInput =

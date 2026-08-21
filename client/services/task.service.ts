@@ -1,104 +1,106 @@
 import api from "@/lib/axios";
-import {GetTasksResponse,} from "@/types/task.types";
-import { CreateTaskInput } from "@/validations/task.schema";
 
 import {
+  GetTasksResponse,
   Task,
   TaskStatus,
 } from "@/types/task.types";
 
+import { CreateTaskInput } from "@/validations/task.schema";
 
-//Get All Task
+
+// --------------------------------------------------
+// Get Project Tasks
+// --------------------------------------------------
+
 export const getMyTasks = async (
-
   page = 1,
-
   limit = 9,
-
-  projectId: string,
+  projectId: string
 ) => {
 
   const query = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    projectId,
+  });
 
-  page: String(page),
-
-  limit: String(limit),
-  
-  projectId,
-});
-
-
-const response =
-  await api.get<GetTasksResponse>(
-
+  const response = await api.get<GetTasksResponse>(
     `/tasks?${query.toString()}`
-
   );
-
-  return response.data;
-};;
-
-
-//Create New Task
-export const createTask = async (
-  data: CreateTaskInput
-) => {
-
-  const response = await api.post("/tasks",data);
 
   return response.data;
 };
 
+
+// --------------------------------------------------
+// Create Task
+// --------------------------------------------------
+
+export const createTask = async (
+  data: CreateTaskInput
+) => {
+
+  const response = await api.post(
+    "/tasks",
+    data
+  );
+
+  return response.data;
+};
+
+
+// --------------------------------------------------
+// Update Task Status
+// --------------------------------------------------
+
+export const updateTaskStatus = async (
+  taskId: string,
+  status: TaskStatus
+) => {
+
+  const response = await api.patch(
+    `/tasks/${taskId}/status`,
+    {
+      status,
+    }
+  );
+
+  return response.data;
+};
+
+
+// --------------------------------------------------
 // Update Task
-export  const updateTask = async (
+// Project ADMIN only
+// --------------------------------------------------
+
+export const updateTask = async (
   taskId: string,
   data: CreateTaskInput
 ) => {
+
   const response = await api.put(
     `/tasks/${taskId}`,
     data
   );
+
   return response.data;
-}
+};
 
-//Delete Task
 
-export const deleteTask = async(
+// --------------------------------------------------
+// Delete Task
+// Project ADMIN only
+// --------------------------------------------------
+
+export const deleteTask = async (
   taskId: string
 ) => {
-  const response = await api.delete(`/tasks/${taskId}`);
 
-  return response.data
-}
-
-//Drag and Drop 
-export const updateTaskStatus = async (
-  task: Task,
-  status: TaskStatus
-) => {
-
-  const response = await api.put(
-
-    `/tasks/${task.id}`,
-
-    {
-
-      title: task.title,
-
-      description: task.description,
-
-      priority: task.priority,
-
-      dueDate: task.dueDate,
-
-      projectId: task.projectId,
-
-      status,
-
-    }
-
+  const response = await api.delete(
+    `/tasks/${taskId}`
   );
 
   return response.data;
-
 };

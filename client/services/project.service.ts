@@ -1,6 +1,26 @@
 import api from "@/lib/axios"
 
-import {Project,CreateProjectInput,UpdateProjectInput,ProjectResponse} from "@/types/project.types";
+import {
+  Project,
+  CreateProjectInput,
+  UpdateProjectInput,
+  ProjectResponse,
+} from "@/types/project.types";
+
+import { TeamMember } from "@/types/team.type";
+
+
+{/*Get Project Memeber*/}
+export const getProjectMembers = async (
+  projectId: string
+) => {
+  const response =
+    await api.get<TeamMember[]>(
+      `/projects/${projectId}/members`
+    );
+
+  return response.data;
+};
 
 {/*Get All Projects*/}
 export const   getProjects = async() => {

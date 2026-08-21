@@ -10,6 +10,10 @@ import { WS_EVENTS } from "../websocket/events";
 import { createTaskSchema } from "../validations/task.schema";
 import { updateTaskSchema } from "../validations/updateTask.schema";
 
+import {
+  updateTaskStatusSchema,
+} from "../validations/updateTaskStatus.schema";
+
 
 
 
@@ -18,11 +22,56 @@ export const createTask = async (
   req: Request,
   res: Response
 ) => {
-  try {
+  try { 
+    //validate request body
     const validatedData = createTaskSchema.parse(req.body);
 
+    //Get authenticated user
     const userId = req.user!.userId;
 
+    //Check creator's project membership
+    const creatorMembership =
+      await prisma.projectMember.findUnique({
+        where: {
+          userId_projectId: {
+            userId,
+            projectId: validatedData.projectId,
+          },
+        },
+      });
+    
+      if (!creatorMembership) {
+        return res.status(403).json({
+          message: "You are not a member of this project.",
+        });
+      }
+
+      //Only project ADMIN can create tasks
+      if (creatorMembership.role !== "ADMIN") {
+        return res.status(403).json({
+          message: "Only project admins can create tasks.",
+        });
+      }
+
+    //Verify assignee belongs to project
+    const membership =
+      await prisma.projectMember.findUnique({
+        where: {
+          userId_projectId: {
+            userId: validatedData.assignToId,
+            projectId: validatedData.projectId,
+          },
+        },
+      });
+
+    if (!membership) {
+      return res.status(400).json({
+        message:
+          "Assigned user is not a member of this project.",
+      });
+    }
+
+    //Create task
     const task = await prisma.task.create({
       data: {
         title: validatedData.title,
@@ -36,16 +85,33 @@ export const createTask = async (
           : null,
       
         creatorId: userId,
+
+        assignToId: validatedData.assignToId,
       
         projectId: validatedData.projectId,
       },
     
       include: {
         project: true,
+
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        assignTo: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
       },
     });
 
-  // Notify connected project memeber task added
+  // Notify Project Room
    sendToProjectRoom(
     task.projectId,
     WS_EVENTS.TASK_CREATED,
@@ -118,6 +184,22 @@ export const getMyTasks = async (
 
           include: {
             project: true,
+                    
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+              },
+            },
+          
+            assignTo: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+              },
+            },
           },
 
           orderBy: {
@@ -161,15 +243,192 @@ export const updateTask = async (
   res: Response
 ) => {
   try {
-    const validatedData = updateTaskSchema.parse(req.body);
+    const validatedData =
+      updateTaskSchema.parse(req.body);
 
     const { taskId } = req.params;
 
     const userId = req.user!.userId;
 
+
+    // Find existing task
+    const existingTask =
+      await prisma.task.findUnique({
+        where: {
+          id: taskId,
+        },
+      });
+
+    if (!existingTask) {
+      return res.status(404).json({
+        message: "Task not found.",
+      });
+    }
+
+
+    // Determine which project the task
+    // will belong to after the update
+    const targetProjectId =
+      validatedData.projectId ??
+      existingTask.projectId;
+
+
+    // Check whether current user
+    // is a member of the target project
+    const membership =
+      await prisma.projectMember.findUnique({
+        where: {
+          userId_projectId: {
+            userId,
+            projectId: targetProjectId,
+          },
+        },
+      });
+
+    if (!membership) {
+      return res.status(403).json({
+        message:
+          "You are not a member of this project.",
+      });
+    }
+
+
+    // Only project ADMIN can update tasks
+    if (membership.role !== "ADMIN") {
+      return res.status(403).json({
+        message:
+          "Only project admins can update tasks.",
+      });
+    }
+
+
+    // Determine assignee after update
+    const targetAssignToId =
+      validatedData.assignToId ??
+      existingTask.assignToId;
+
+
+    //  If task has an assignee,
+    // verify that the assignee belongs
+    // to the target project
+    if (targetAssignToId) {
+
+      const assigneeMembership =
+        await prisma.projectMember.findUnique({
+          where: {
+            userId_projectId: {
+              userId: targetAssignToId,
+              projectId: targetProjectId,
+            },
+          },
+        });
+
+      if (!assigneeMembership) {
+        return res.status(400).json({
+          message:
+            "Assigned user is not a member of this project.",
+        });
+      }
+    }
+
+
+    // Update task
+    const updatedTask =
+      await prisma.task.update({
+        where: {
+          id: taskId,
+        },
+
+        data: {
+          title: validatedData.title,
+
+          description:
+            validatedData.description,
+
+          priority:
+            validatedData.priority,
+
+          status:
+            validatedData.status,
+
+          dueDate:
+            validatedData.dueDate
+              ? new Date(validatedData.dueDate)
+              : undefined,
+
+          projectId:
+            validatedData.projectId,
+
+          assignToId:
+            validatedData.assignToId,
+        },
+
+        include: {
+          project: true,
+
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+
+          assignTo: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+        },
+      });
+
+
+    // Notify project room
+    sendToProjectRoom(
+      updatedTask.projectId,
+      WS_EVENTS.TASK_UPDATED,
+      {
+        task: updatedTask,
+      }
+    );
+
+
+    return res.status(200).json({
+      message:
+        "Task updated successfully.",
+      task: updatedTask,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message:
+        "Internal server error.",
+    });
+  }
+};
+
+//--------------Update task status-----------------//
+export const updateTaskStatus = async (
+  req: Request<{ taskId: string }>,
+  res: Response
+) => {
+  try {
+    const { taskId } = req.params;
+    const userId = req.user!.userId;
+
+    const validatedData =
+      updateTaskStatusSchema.parse(req.body);
+
     const task = await prisma.task.findUnique({
       where: {
         id: taskId,
+      },
+      include: {
+        project: true,
       },
     });
 
@@ -179,38 +438,65 @@ export const updateTask = async (
       });
     }
 
-    if (task.creatorId !== userId) {
+    const membership =
+      await prisma.projectMember.findUnique({
+        where: {
+          userId_projectId: {
+            userId,
+            projectId: task.projectId,
+          },
+        },
+      });
+
+    if (!membership) {
       return res.status(403).json({
-        message: "You are not authorized to update this task.",
+        message: "You are not a member of this project.",
       });
     }
 
-    const updatedTask = await prisma.task.update({
-      where: {
-        id: taskId,
-      },
-      data: {
-      title: validatedData.title,
+    const isProjectAdmin =
+      membership.role === "ADMIN";
 
-      description: validatedData.description,
+    const isAssignedUser =
+      task.assignToId === userId;
 
-      priority: validatedData.priority,
+    if (!isProjectAdmin && !isAssignedUser) {
+      return res.status(403).json({
+        message:
+          "You are not authorized to change this task status.",
+      });
+    }
 
-      status: validatedData.status,
+    const updatedTask =
+      await prisma.task.update({
+        where: {
+          id: taskId,
+        },
 
-      dueDate: validatedData.dueDate
-        ? new Date(validatedData.dueDate)
-        : undefined,
+        data: {
+          status: validatedData.status,
+        },
 
-      projectId: validatedData.projectId,
-    },
+        include: {
+          project: true,
 
-      include: {
-        project: true,
-      },
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+          assignTo: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+        },
       });
 
-    //Notify connected project member task updated
     sendToProjectRoom(
       updatedTask.projectId,
       WS_EVENTS.TASK_UPDATED,
@@ -220,17 +506,19 @@ export const updateTask = async (
     );
 
     return res.status(200).json({
-      message: "Task updated successfully.",
+      message: "Task status updated successfully.",
       task: updatedTask,
     });
+
   } catch (error) {
     console.error(error);
 
-    return res.status(500).json({
-      message: "Internal server error.",
+    return res.status(400).json({
+      message: "Failed to update task status.",
     });
   }
 };
+
 
 //-----------------Delete Task--------------------//
 export const deleteTask = async (

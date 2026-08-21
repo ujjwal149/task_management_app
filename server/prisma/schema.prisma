@@ -8,22 +8,24 @@ datasource db {
 }
 
 model User {
-  id              String          @id @default(cuid())
+  id String @id @default(cuid())
 
-  name            String
-  email           String          @unique
-  password        String?
-  avatar          String?
-  provider        String          @default("LOCAL")
+  name     String
+  email    String  @unique
+  password String?
+  avatar   String?
+  provider String  @default("LOCAL")
 
-  role            Role            @default(USER)
+  role Role @default(USER)
 
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   createdProjects Project[]
   memberships     ProjectMember[]
-  createdTasks    Task[]
+
+  createdTasks  Task[] @relation("TaskCreator")
+  assignedTasks Task[] @relation("TaskAssignedTo")
 }
 
 model Project {
@@ -46,12 +48,18 @@ model Task {
   status      TaskStatus   @default(TODO)
   priority    TaskPriority @default(MEDIUM)
   dueDate     DateTime?
-  creatorId   String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  projectId   String
-  creator     User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  creatorId  String
+  assignToId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projectId String
+
+  creator  User    @relation("TaskCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  assignTo User?   @relation("TaskAssignedTo", fields: [assignToId], references: [id], onDelete: SetNull)
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model ProjectMember {

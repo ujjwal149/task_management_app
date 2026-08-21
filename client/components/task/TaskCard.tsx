@@ -4,16 +4,33 @@ import { CalendarDays, Pencil, Trash2, FolderKanban, } from "lucide-react";
 
 import { Task } from "@/types/task.types";
 import { useUIStore } from "@/store/ui.store";
+import { useAuthStore } from "@/store/auth.store";
+
+import TaskStatusDropdown from "./TaskStatusDropdown";
 
 type Props = {
   task: Task;
 };
 
-export default function TaskCard({
-  task,
-}: Props) {
+export default function TaskCard({ task }: Props) {
 
-  const { openEditTaskModal,openDeleteTaskModal } = useUIStore();
+  const { user } = useAuthStore();
+
+  const isProjectAdmin =
+    task.project.creatorId === user?.id;
+
+  const canEditDelete = isProjectAdmin;
+
+  const canChangeStatus =
+    isProjectAdmin ||
+    task.assignToId === user?.id;
+
+  const {
+    openEditTaskModal,
+    openDeleteTaskModal,
+  } = useUIStore();
+
+  // ...
 
   return (
     <div
@@ -79,27 +96,28 @@ export default function TaskCard({
             {task.priority}
             
           </span>
+{canEditDelete && (
+  <>
+    <button
+      type="button"
+      onClick={() => openEditTaskModal(task)}
+      className="rounded-lg p-2 text-stone-500 transition hover:bg-stone-100 hover:text-blue-600"
+      title="Edit Task"
+    >
+      <Pencil size={18} />
+    </button>
 
-          <button
-            type="button"
-            onClick={() => openEditTaskModal(task)}
-            className="rounded-lg p-2 text-stone-500 transition hover:bg-stone-100 hover:text-blue-600"
-            title="Edit Task"
-          >
-            <Pencil size={18} />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => openDeleteTaskModal(task)}
-            className="rounded-lg p-2 text-stone-500 transition hover:bg-red-100 hover:text-red-600"
-            title="Delete Task"
-          >
-            <Trash2 size={18} />
-          </button>
-
-        </div>
-
+    <button
+      type="button"
+      onClick={() => openDeleteTaskModal(task)}
+      className="rounded-lg p-2 text-stone-500 transition hover:bg-red-100 hover:text-red-600"
+      title="Delete Task"
+    >
+      <Trash2 size={18} />
+    </button>
+  </>
+)}
+</div>
       </div>
 
       {/* Description */}
@@ -108,33 +126,47 @@ export default function TaskCard({
         {task.description || "No description"}
       </p>
 
+      {/* Assignee */}
+      
+      <div className="mt-5 flex items-center gap-3">
+
+        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-stone-200">
+
+          {task.assignTo?.avatar ? (
+            <img
+              src={task.assignTo.avatar}
+              alt={task.assignTo.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="text-sm font-semibold text-stone-600">
+              {task.assignTo?.name?.charAt(0).toUpperCase() || "?"}
+            </span>
+          )}
+
+        </div>
+        
+        <div>
+          <p className="text-xs text-stone-500">
+            Assigned to
+          </p>
+        
+          <p className="text-sm font-medium text-stone-800">
+            {task.assignTo?.name || "Unassigned"}
+          </p>
+        </div>
+        
+      </div>
+
       {/* Footer */}
 
       <div className="mt-6 flex items-center justify-between">
 
-        <span
-          className={`
-            rounded-full
-            px-3
-            py-1
-            text-xs
-            font-medium
-          
-            ${
-              task.status === "DONE"
-                ? "bg-green-100 text-green-700"
-            
-                : task.status === "IN_PROGRESS"
-                ? "bg-blue-100 text-blue-700"
-            
-                : "bg-stone-200 text-stone-700"
-            }
-          `}
-        >
-          
-          {task.status.replace("_", " ")}
-          
-        </span>
+        <TaskStatusDropdown
+          taskId={task.id}
+          status={task.status}
+          canChangeStatus={canChangeStatus}
+        />
 
         <div className="flex items-center gap-2 text-sm text-stone-500">
 

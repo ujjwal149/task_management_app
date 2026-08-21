@@ -62,7 +62,7 @@ export default function ProjectCard({
 
       {/* Description */}
 
-      <p className="mt-4 min-h-[48px] text-sm leading-6 text-stone-600">
+      <p className="mt-4 min-h-12 text-sm leading-6 text-stone-600">
         {project.description ||
           "No description provided."}
       </p>

@@ -1,7 +1,13 @@
 import { Router } from "express";
 
-import { createProject,getProjects,getProjectById,updateProject,deleteProject } from "../controllers/project.controller";
-
+import {
+  createProject,
+  getProjects,
+  getProjectById,
+  updateProject,
+  deleteProject,
+  getProjectMembers,
+} from "../controllers/project.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
@@ -10,6 +16,7 @@ router.use(authMiddleware);
 
 router.post("/",createProject);
 router.get("/",getProjects);
+router.get("/:id/members", getProjectMembers);
 router.get("/:id",getProjectById);
 router.put("/:id",updateProject);
 router.delete("/:id",deleteProject);

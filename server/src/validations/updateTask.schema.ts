@@ -28,6 +28,10 @@ export const updateTaskSchema = z.object({
   projectId: z
     .string()
     .optional(),
+  assignToId: z
+    .string()
+    .min(1, "Assignee is required.")
+    .optional(),
 
 });
 

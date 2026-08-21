@@ -1,70 +1,68 @@
 "use client";
 
-import { useMemo } from "react";
-
-import { useTaskStore } from "@/store/task.store";
-
-import KanbanCard from "./KanbanCard";
-
-import { TaskStatus } from "@/types/task.types";
-
 import { useDroppable } from "@dnd-kit/core";
+
+import { Task, TaskStatus } from "@/types/task.types";
+
+import KanbanTaskCard from "./KanbanCard";
 
 type Props = {
   title: string;
   status: TaskStatus;
+  tasks: Task[];
 };
 
 export default function KanbanColumn({
   title,
   status,
+  tasks,
 }: Props) {
 
-  const tasks =
-    useTaskStore((state) => state.tasks);
-
-  const { setNodeRef } = useDroppable({
-      id: status,
+  const {
+    setNodeRef,
+    isOver,
+  } = useDroppable({
+    id: status,
   });
 
-  const filteredTasks = useMemo(() => {
-
-    return tasks.filter(
+  const columnTasks =
+    tasks.filter(
       (task) => task.status === status
     );
-
-  }, [tasks, status]);
 
   return (
     <div
       ref={setNodeRef}
-      
-      className="
+      className={`
+        min-h-[500px]
         rounded-2xl
         border
         border-stone-200
         bg-stone-50
         p-4
-        min-h-[650px]
-      "
+        transition
+        ${isOver ? "ring-2 ring-blue-400" : ""}
+      `}
     >
-      <div className="mb-5">
 
-        <h2 className="text-lg font-semibold">
+      <div className="mb-4 flex items-center justify-between">
+
+        <h2 className="font-semibold text-stone-800">
           {title}
         </h2>
 
-        <p className="text-sm text-stone-500">
-          {filteredTasks.length} Tasks
-        </p>
+        <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-stone-500">
+          {columnTasks.length}
+        </span>
 
       </div>
 
+
       <div className="space-y-3">
 
-        {filteredTasks.map((task) => (
+        {columnTasks.map((task) => (
 
-          <KanbanCard
+          <KanbanTaskCard
             key={task.id}
             task={task}
           />

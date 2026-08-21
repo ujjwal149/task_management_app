@@ -3,6 +3,9 @@
 import { useEffect } from "react";
 
 import { useTasks } from "@/hooks/useTasks";
+import { useProjects } from "@/hooks/useProject";
+import { useTeamStore } from "@/store/team.store";
+
 import TaskCard from "./TaskCard";
 
 export default function TaskList() {
@@ -25,11 +28,22 @@ export default function TaskList() {
 
   } = useTasks();
 
+  const { currentProject } = useProjects();
+
+  const {
+    members,
+    fetchMembers,
+  } = useTeamStore();
+
   useEffect(() => {
     fetchTasks();
   }, [page,fetchTasks]);
 
-  
+  useEffect(() => {
+    if (currentProject?.id) {
+      fetchMembers(currentProject.id);
+    }
+  }, [currentProject?.id, fetchMembers]);
 
   const filteredTasks = tasks.filter((task) => {
   const query = searchQuery.toLowerCase();
