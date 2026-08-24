@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Menu, Plus, Search } from "lucide-react";
+import { Menu, Plus, Search } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useUIStore } from "@/store/ui.store";
@@ -8,6 +8,9 @@ import { useUIStore } from "@/store/ui.store";
 import { useEffect,useState } from "react";
 
 import { useTaskStore } from "@/store/task.store";
+
+import NotificationCenter
+  from "@/components/notifications/NotificationCenter";
 
 import UserDropdown from "./UserDropdown";
 
@@ -69,9 +72,7 @@ export default function Navbar() {
 
       <div className="flex items-center gap-3 md:gap-5">
 
-        {/* <button className="rounded-xl p-2 text-stone-600 transition hover:bg-stone-100">
-          <Bell size={20} />
-        </button> */}
+        <NotificationCenter />
 
         <button
           onClick={openCreateTaskModal}

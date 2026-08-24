@@ -8,9 +8,7 @@ import { generateToken } from "../lib/jwt";
 import { signupSchema } from "../validations/signup.schema";
 import { signinSchema } from "../validations/signin.schema";
 
-/* ===========================================
-   SIGN UP
-=========================================== */
+//----------------------- SIGN UP---------------//
 
 export const signup = async (
   req: Request,
@@ -77,9 +75,7 @@ export const signup = async (
   }
 };
 
-/* ===========================================
-   SIGN IN
-=========================================== */
+//-------------------SIGN IN---------------------//
 
 export const signin = async (
   req: Request,
@@ -159,9 +155,7 @@ export const signin = async (
   }
 };
 
-/* ===========================================
-   LOGOUT
-=========================================== */
+// -----------------------------LOGOUT-----------------//
 
 export const logout = (
   req: Request,
@@ -180,9 +174,7 @@ export const logout = (
 
 };
 
-/* ===========================================
-   CURRENT USER
-=========================================== */
+//-------------------- CURRENT USER--------------------//
 
 export const me = async (
   req: Request,
@@ -226,9 +218,7 @@ export const me = async (
   }
 };
 
-/* ===========================================
-   GOOGLE CALLBACK
-=========================================== */
+//----------------------- GOOGLE CALLBACK------------------//
 
 export const googleCallback = async (
   req: Request,
@@ -267,9 +257,7 @@ const token = generateToken({
   }
 };
 
-/* ===========================================
-   ADMIN ONLY
-=========================================== */
+//------------------- ADMIN ONLY-----------------------------//
 
 export const adminOnly = async (
   req: Request,

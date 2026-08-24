@@ -1,4 +1,5 @@
 import { useTaskStore } from "@/store/task.store";
+import { useNotificationStore } from "@/store/notification.store";
 
 let socket: WebSocket | null = null;
 
@@ -126,8 +127,36 @@ const ws = new WebSocket(WS_URL);
 
           break;
 
-        
+        case "notification:project-invitation": {
 
+          const data = message.data;
+                
+          console.log(
+            "🔔 Project invitation received:",
+            data
+          );
+        
+          useNotificationStore
+            .getState()
+            .addNotification({
+              id: crypto.randomUUID(),
+            
+              type: "PROJECT_INVITATION",
+            
+              message:
+                `${data.invitedBy.name} invited you to join ${data.projectName}`,
+            
+              data,
+            
+              read: false,
+            
+              createdAt:
+                new Date().toISOString(),
+            });
+          
+          break;
+        }
+          
 
         default:
 

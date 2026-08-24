@@ -17,6 +17,10 @@ export const WS_EVENTS = {
   TEAM_MEMBER_ADDED: "team:member-added",
   TEAM_MEMBER_REMOVED: "team:member-removed",
 
+  PROJECT_INVITATION: "notification:project-invitation",
+  PROJECT_MEMBER_ADDED: "notification:project-member-added",
+  PROJECT_MEMBER_REMOVED: "notification:project-member-removed",
+
   TEST_BROADCAST: "test:broadcast",
 
 

@@ -1,79 +1,94 @@
 import prisma from "../lib/prisma";
 import { Request, Response } from "express";
 
+import {
+  inviteMemberService,
+} from "../services/team.service";
+import { inviteMemberSchema } from "../validations/team.schema";
+
 export const inviteMember = async (
   req: Request,
   res: Response
 ) => {
+
   try {
-    const { email, role, projectId } = req.body;
 
-    const currentUserId = req.user!.userId;
+    const validatedData = inviteMemberSchema.parse(req.body)
 
-    // Check project ownership
-    const project = await prisma.project.findFirst({
-      where: {
-        id: projectId,
-        creatorId: currentUserId,
-      },
+
+    const currentUserId =
+      req.user!.userId;
+
+
+    await inviteMemberService({
+      ...validatedData,
+      currentUserId,
     });
 
-    if (!project) {
-      return res.status(403).json({
-        message: "You are not allowed to invite members.",
-      });
-    }
-
-    // Find invited user
-    const user = await prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
-
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found.",
-      });
-    }
-
-    // Prevent duplicate members
-    const existingMember = await prisma.projectMember.findUnique({
-      where: {
-        userId_projectId: {
-          userId: user.id,
-          projectId,
-        },
-      },
-    });
-
-    if (existingMember) {
-      return res.status(400).json({
-        message: "User is already a member.",
-      });
-    }
-
-    await prisma.projectMember.create({
-      data: {
-        userId: user.id,
-        projectId,
-        role,
-      },
-    });
 
     return res.status(201).json({
-      message: "Member invited successfully.",
+
+      message:
+        "Member invited successfully.",
+
     });
 
   } catch (error) {
+
     console.error(error);
 
+
+    if (
+      error instanceof Error
+    ) {
+
+      if (
+        error.message ===
+        "You are not allowed to invite members."
+      ) {
+
+        return res.status(403).json({
+          message: error.message,
+        });
+
+      }
+
+
+      if (
+        error.message ===
+        "User not found."
+      ) {
+
+        return res.status(404).json({
+          message: error.message,
+        });
+
+      }
+
+
+      if (
+        error.message ===
+        "User is already a member."
+      ) {
+
+        return res.status(400).json({
+          message: error.message,
+        });
+
+      }
+
+    }
+
+
     return res.status(500).json({
-      message: "Internal server error.",
+
+      message:
+        "Internal server error.",
+
     });
+
   }
 };
-
 
 //GetProject Member 
 

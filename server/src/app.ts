@@ -10,6 +10,7 @@ import dashboardRoutes from "./routes/dashboard.routes";
 import projectRoutes from "./routes/project.routes";
 import userRoutes from "./routes/user.routes";
 import teamRoutes from "./routes/team.routes";
+import invitationRoutes from "./routes/invitation.routes";
 
 const app = express();
 
@@ -39,5 +40,10 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/team", teamRoutes);
+
+app.use(
+  "/api/invitations",
+  invitationRoutes
+);
 
 export default app;
