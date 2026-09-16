@@ -31,7 +31,8 @@ export const signupSchema = z.object({
 
   password: z
     .string()
-    .min(6, "Password must be at least 6 characters"),
+    .min(8, "Password must be at least 8 characters")
+    .refine(value => new TextEncoder().encode(value).length <= 72, "Password must be at most 72 UTF-8 bytes"),
 });
 
 export type SignUpFormData = z.infer<typeof signupSchema>;

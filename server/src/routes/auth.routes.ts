@@ -3,6 +3,11 @@ import passport from "passport";
 
 import {
   signup,
+  verifySignup,
+  requestLoginOtp,
+  verifyLoginOtp,
+  forgotPassword,
+  resetPassword,
   signin,
   logout,
   me,
@@ -13,19 +18,27 @@ import {
 import { authMiddleware } from "../middleware/auth.middleware";
 import { adminMiddleware } from "../middleware/admin.middleware";
 
+import { authRateLimit } from "../middleware/auth-rate-limit.middleware";
+
 const router = Router();
+const sendLimit = authRateLimit("otp-send", 20);
+const verifyLimit = authRateLimit("otp-verify", 60);
 
 /* ===========================================
    Local Authentication
 =========================================== */
 
-router.post("/signup", signup);
+router.post("/signup", sendLimit, signup);
+router.post("/signup/verify", verifyLimit, verifySignup);
+router.post("/otp/request", sendLimit, requestLoginOtp);
+router.post("/otp/verify", verifyLimit, verifyLoginOtp);
+router.post("/forgot-password", sendLimit, forgotPassword);
+router.post("/reset-password", verifyLimit, resetPassword);
 
-router.post("/signin", signin);
+router.post("/signin", authRateLimit("password-login", 30), signin);
 
 router.post(
   "/logout",
-  authMiddleware,
   logout
 );
 

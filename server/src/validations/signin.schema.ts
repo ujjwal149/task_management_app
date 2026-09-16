@@ -1,13 +1,8 @@
-import {z} from "zod";
+import { z } from "zod";
+import { emailSchema } from "./otp.schema";
 
 export const signinSchema = z.object({
-    email: z
-        .string()
-        .email("Invalid email"),
-    password: z
-        .string()
-        .min(8,"Password must be atleast 8 characters"),
-
+  email: emailSchema,
+  password: z.string().min(1).max(1024),
 });
-
 export type SigninInput = z.infer<typeof signinSchema>;

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect,useState } from "react";
+import Link from "next/link";
+import { isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
 
 import { useForm } from "react-hook-form";
@@ -37,7 +39,7 @@ export default function SignInPage() {
     register,
     handleSubmit,
     setError,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
   });
@@ -49,16 +51,15 @@ export default function SignInPage() {
       setUser(response.user);
 
       router.replace("/dashboard");
-    } catch (error: any) {
-      const backendMessage = error.response?.data?.message || 
-            "Something went wrong";
+    } catch (error: unknown) {
+      const backendMessage = isAxiosError(error) ? error.response?.data?.message || "Something went wrong" : "Something went wrong";
         
       setError("password",{
         type: "server",
         message: backendMessage,
       });
 
-      console.log(error.response?.data);
+
     }
   };
 
@@ -162,6 +163,7 @@ export default function SignInPage() {
 
             <Button
               type="submit"
+              loading={isSubmitting}
               className="w-full  cursor-pointer "
             >
               Sign In
@@ -171,11 +173,16 @@ export default function SignInPage() {
 
           </form>
 
+          <div className="mt-5 flex justify-between gap-4 text-sm text-blue-600">
+            <Link href="/signin/otp">Sign in with email code</Link>
+            <Link href="/forgot-password">Forgot password?</Link>
+          </div>
+
           <div className="mt-6 border-t border-stone-200 pt-5 text-center">
 
             <p className="text-sm text-stone-500">
 
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
 
               <button
                 onClick={() => router.push("/signup")}

@@ -62,3 +62,7 @@ npm run dev
 ## Author
 
 Ujjwal Kumar
+
+## Email verification, OTP login and password reset
+
+See [setup and migration instructions](docs/email-auth.md) before deploying the email authentication feature.

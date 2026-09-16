@@ -14,6 +14,8 @@ model User {
   password String?
   avatar   String?
   provider String   @default("LOCAL")
+  emailVerifiedAt DateTime?
+  tokenVersion Int @default(0)
   role     Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -113,4 +115,37 @@ enum InvitationStatus {
   PENDING
   ACCEPTED
   REJECTED
+}
+
+enum OtpPurpose {
+  SIGNUP
+  LOGIN
+  RESET_PASSWORD
+}
+
+// Pending registrations live here, never in User until verified.
+model EmailOtp {
+  id String @id @default(cuid())
+  email String
+  purpose OtpPurpose
+  challengeId String
+  codeHash String?
+  name String?
+  passwordHash String?
+  expiresAt DateTime
+  attempts Int @default(0)
+  lastSentAt DateTime
+  windowStartedAt DateTime
+  sendCount Int @default(0)
+
+  @@unique([email, purpose])
+  @@index([expiresAt])
+}
+
+model AuthRateLimit {
+  key String @id
+  windowStartedAt DateTime
+  count Int
+
+  @@index([windowStartedAt])
 }

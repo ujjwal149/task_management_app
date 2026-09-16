@@ -14,6 +14,13 @@ import invitationRoutes from "./routes/invitation.routes";
 
 const app = express();
 
+// Set to the exact number of trusted reverse proxies in your deployment.
+if (process.env.TRUST_PROXY_HOPS) {
+  const hops = Number(process.env.TRUST_PROXY_HOPS);
+  if (!Number.isInteger(hops) || hops < 0) throw new Error("Invalid TRUST_PROXY_HOPS");
+  app.set("trust proxy", hops);
+}
+
 app.use(express.json());
 
 app.use(cookieParser());

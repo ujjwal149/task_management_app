@@ -1,271 +1,104 @@
 import { Request, Response } from "express";
+import { User } from "@prisma/client";
+import { ZodError } from "zod";
 import bcrypt from "bcryptjs";
-
 import prisma from "../lib/prisma";
-
 import { generateToken } from "../lib/jwt";
-
 import { signupSchema } from "../validations/signup.schema";
 import { signinSchema } from "../validations/signin.schema";
+import { otpRequestSchema, otpVerifySchema, resetPasswordSchema } from "../validations/otp.schema";
+import { AuthError, requestOtp, verifyOtp } from "../services/otp.service";
 
-//----------------------- SIGN UP---------------//
+const cookieOptions = () => ({
+  httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const,
+  path: "/",
+});
+function startSession(res: Response, user: User) {
+  res.cookie("token", generateToken({ userId: user.id, role: user.role, tokenVersion: user.tokenVersion }),
+    { ...cookieOptions(), maxAge: 7 * 24 * 60 * 60 * 1000 });
+  return { id: user.id, name: user.name, email: user.email, avatar: user.avatar, role: user.role };
+}
+function authError(res: Response, error: unknown) {
+  if (error instanceof ZodError) return res.status(400).json({ message: error.issues[0]?.message ?? "Invalid input." });
+  if (error instanceof AuthError) {
+    if (error.retryAfter) res.setHeader("Retry-After", error.retryAfter);
+    return res.status(error.status).json({ message: error.message });
+  }
+  // Never log request bodies, passwords, codes, or provider responses.
+  return res.status(500).json({ message: "Authentication is temporarily unavailable." });
+}
 
-export const signup = async (
-  req: Request,
-  res: Response
-) => {
+export const signup = async (req: Request, res: Response) => {
   try {
     const data = signupSchema.parse(req.body);
-
-    const existingUser =
-      await prisma.user.findUnique({
-        where: {
-          email: data.email,
-        },
-      });
-
-    if (existingUser) {
-      return res.status(400).json({
-        message: "User already exists.",
-      });
-    }
-
-    const hashedPassword =
-      await bcrypt.hash(data.password, 10);
-
-    const user = await prisma.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        password: hashedPassword,
-      },
-    });
-
-    const token = generateToken({
-      userId: user.id,
-      role: user.role,
-    });
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return res.status(201).json({
-      message: "User created successfully.",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        role: user.role,
-      },
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    return res.status(500).json({
-      message: "Internal server error.",
-    });
-
-  }
+    return res.status(202).json(await requestOtp(data.email, "SIGNUP", data));
+  } catch (error) { return authError(res, error); }
 };
-
-//-------------------SIGN IN---------------------//
-
-export const signin = async (
-  req: Request,
-  res: Response
-) => {
+export const verifySignup = async (req: Request, res: Response) => {
   try {
-
+    const { email, challengeId, code } = otpVerifySchema.parse(req.body);
+    const user = await verifyOtp(email, "SIGNUP", challengeId, code);
+    return res.status(201).json({ message: "Email verified. Account created.", user: startSession(res, user) });
+  } catch (error) { return authError(res, error); }
+};
+export const requestLoginOtp = async (req: Request, res: Response) => {
+  try {
+    const { email } = otpRequestSchema.parse(req.body);
+    return res.status(202).json(await requestOtp(email, "LOGIN"));
+  } catch (error) { return authError(res, error); }
+};
+export const verifyLoginOtp = async (req: Request, res: Response) => {
+  try {
+    const { email, challengeId, code } = otpVerifySchema.parse(req.body);
+    const user = await verifyOtp(email, "LOGIN", challengeId, code);
+    return res.json({ message: "Signed in successfully.", user: startSession(res, user) });
+  } catch (error) { return authError(res, error); }
+};
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = otpRequestSchema.parse(req.body);
+    return res.status(202).json(await requestOtp(email, "RESET_PASSWORD"));
+  } catch (error) { return authError(res, error); }
+};
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { email, challengeId, code, password } = resetPasswordSchema.parse(req.body);
+    await verifyOtp(email, "RESET_PASSWORD", challengeId, code, password);
+    res.clearCookie("token", cookieOptions());
+    return res.json({ message: "Password reset. Please sign in with your new password." });
+  } catch (error) { return authError(res, error); }
+};
+export const signin = async (req: Request, res: Response) => {
+  try {
     const data = signinSchema.parse(req.body);
-
-    const user =
-      await prisma.user.findUnique({
-        where: {
-          email: data.email,
-        },
-      });
-
-    if (!user) {
-      return res.status(400).json({
-        message: "Invalid credentials.",
-      });
+    const user = await prisma.user.findUnique({ where: { email: data.email } });
+    if (!user?.password || !(await bcrypt.compare(data.password, user.password))) {
+      throw new AuthError(400, "Invalid credentials. You can also sign in with an email code or Google.");
     }
-
-    /*
-      Google users don't have a password.
-    */
-
-    if (!user.password) {
-      return res.status(400).json({
-        message:
-          "This account uses Google Sign-In.",
-      });
-    }
-
-    const passwordMatches =
-      await bcrypt.compare(
-        data.password,
-        user.password
-      );
-
-    if (!passwordMatches) {
-      return res.status(400).json({
-        message: "Invalid credentials.",
-      });
-    }
-
-    const token = generateToken({
-      userId: user.id,
-      role: user.role,
-    });
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return res.status(200).json({
-      message: "Signin successful.",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        role: user.role,
-      },
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    return res.status(500).json({
-      message: "Internal server error.",
-    });
-
-  }
+    if (!user.emailVerifiedAt) throw new AuthError(403, "Verify your email by signing in with an email code first.");
+    return res.json({ message: "Signin successful.", user: startSession(res, user) });
+  } catch (error) { return authError(res, error); }
 };
-
-// -----------------------------LOGOUT-----------------//
-
-export const logout = (
-  req: Request,
-  res: Response
-) => {
-
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-  });
-
-  return res.status(200).json({
-    message: "Logged out successfully.",
-  });
-
+export const logout = (_req: Request, res: Response) => {
+  res.clearCookie("token", cookieOptions());
+  return res.json({ message: "Logged out successfully." });
 };
-
-//-------------------- CURRENT USER--------------------//
-
-export const me = async (
-  req: Request,
-  res: Response
-) => {
+export const me = async (req: Request, res: Response) => {
   try {
-
-    const user =
-      await prisma.user.findUnique({
-        where: {
-          id: req.user!.userId,
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          avatar: true,
-          role: true,
-          createdAt: true,
-        },
-      });
-
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found.",
-      });
-    }
-
-    return res.status(200).json({
-      user,
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    return res.status(500).json({
-      message: "Internal server error.",
-    });
-
-  }
+    const user = await prisma.user.findUnique({ where: { id: req.user!.userId }, select: {
+      id: true, name: true, email: true, avatar: true, role: true, createdAt: true,
+    } });
+    return res.json({ user });
+  } catch (error) { return authError(res, error); }
 };
-
-//----------------------- GOOGLE CALLBACK------------------//
-
-export const googleCallback = async (
-  req: Request,
-  res: Response
-) => {
+export const googleCallback = async (req: Request, res: Response) => {
   try {
-
-    const user = req.user as {
-      userId: string;
-      role: "ADMIN" | "USER";
-    };
-
-const token = generateToken({
-  userId: user.userId,
-  role: user.role,});
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return res.redirect(
-      `${process.env.CLIENT_URL}/dashboard`
-    );
-
-  } catch (error) {
-
-    console.error(error);
-
-    return res.redirect(
-      `${process.env.CLIENT_URL}/signin`
-    );
-
+    const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+    if (!user?.emailVerifiedAt) throw new Error("Unverified email");
+    startSession(res, user);
+    return res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+  } catch {
+    return res.redirect(`${process.env.CLIENT_URL}/signin`);
   }
 };
-
-//------------------- ADMIN ONLY-----------------------------//
-
-export const adminOnly = async (
-  req: Request,
-  res: Response
-) => {
-
-  return res.status(200).json({
-    message: "Welcome Admin!",
-  });
-
-};
+export const adminOnly = (_req: Request, res: Response) => res.json({ message: "Welcome Admin!" });

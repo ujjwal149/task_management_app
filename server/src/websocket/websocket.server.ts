@@ -7,10 +7,22 @@ import prisma from "../lib/prisma";
 
 import { Server } from "http";
 
-import { verifyToken } from "../lib/jwt";
+import { verifySessionToken } from "../lib/jwt";
 
 import { WS_EVENTS } from "./events";
 
+
+// Recheck before every outgoing event as well as on connection and incoming messages.
+// This also enforces password-reset revocation across multiple server instances.
+const socketTokens = new WeakMap<WebSocket, string>();
+async function sendAuthenticated(client: WebSocket, message: string) {
+  try {
+    const token = socketTokens.get(client);
+    if (!token) throw new Error("No session");
+    await verifySessionToken(token);
+    if (client.readyState === WebSocket.OPEN) client.send(message);
+  } catch { client.close(1008, "Session expired"); }
+}
 
 //CONNECTION STORAGE
 const userConnections = new Map<
@@ -140,7 +152,7 @@ export const initializeWebSocket = (
 
   wss.on(
     "connection",
-    (ws, request) => {
+    async (ws, request) => {
 
       try {
 
@@ -198,7 +210,9 @@ export const initializeWebSocket = (
         // ====================================================
 
         const decoded =
-          verifyToken(token);
+          await verifySessionToken(token);
+        if (ws.readyState !== WebSocket.OPEN) return;
+        socketTokens.set(ws, token);
 
 
         console.log(
@@ -271,6 +285,8 @@ export const initializeWebSocket = (
 
             try {
 
+              try { await verifySessionToken(token); }
+              catch { ws.close(1008, "Session expired"); return; }
               const parsedMessage =
                 JSON.parse(
                   message.toString()
@@ -652,9 +668,7 @@ export const broadcast = (
             WebSocket.OPEN
           ) {
 
-            client.send(
-              message
-            );
+            void sendAuthenticated(client, message);
 
           }
 
@@ -707,9 +721,7 @@ export const sendToUser = (
         WebSocket.OPEN
       ) {
 
-        client.send(
-          message
-        );
+        void sendAuthenticated(client, message);
 
       }
 
@@ -750,7 +762,7 @@ export const sendToProjectRoom = (
 
   connections.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
-      client.send(message);
+      void sendAuthenticated(client, message);
     }
   });
 
