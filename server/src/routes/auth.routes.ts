@@ -3,6 +3,7 @@ import passport from "passport";
 
 import {
   signup,
+  verifySignup,
   signin,
   logout,
   me,
@@ -20,6 +21,8 @@ const router = Router();
 =========================================== */
 
 router.post("/signup", signup);
+
+router.post("/signup/verify", verifySignup);
 
 router.post("/signin", signin);
 
