@@ -21,13 +21,26 @@ export const signup = async (
         return response.data;
     };
 
-    export const logout = async () => {
+//Verify signup 
+export type VerifySignupData = {
+  signupId: string;
+  email: string;
+  otp: string;
+};
+
+export const verifySignup = async (data: VerifySignupData) => {
+  const response = await api.post("/auth/signup/verify", data);
+
+  return response.data;
+};
+
+export const logout = async () => {
         const response = await api.post("/auth/logout");
 
         return response.data;
     }
 
-    export const me = async() => {
+export const me = async() => {
         const response = await api.get("/auth/me")
         return response.data;
     }
