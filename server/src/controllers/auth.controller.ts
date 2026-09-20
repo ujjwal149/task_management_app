@@ -113,12 +113,14 @@ export const signin = async (
 
     const data = signinSchema.parse(req.body);
 
-    const user =
-      await prisma.user.findUnique({
-        where: {
-          email: data.email,
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: data.email.trim(),
+          mode: "insensitive",
         },
-      });
+      },
+    });
 
     if (!user) {
       return res.status(400).json({
