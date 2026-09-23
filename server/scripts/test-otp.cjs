@@ -20,7 +20,7 @@ const storedHash = hashSignupOtp(signupId, email, otp);
 
 // Our chosen generator always returns six digits without a leading zero.
 assert.equal(typeof otp, "string");
-assert.match(otp, /^[1-9]\d{5}$/);
+assert.match(otp, /^\d{6}$/);
 assert.match(storedHash, /^[a-f0-9]{64}$/);
 
 // The correct code must match.

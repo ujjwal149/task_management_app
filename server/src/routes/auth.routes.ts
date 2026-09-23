@@ -13,6 +13,7 @@ import {
 
 import { authMiddleware } from "../middleware/auth.middleware";
 import { adminMiddleware } from "../middleware/admin.middleware";
+import { signupRateLimit } from "../middleware/signupRateLimit.middleware";
 
 const router = Router();
 
@@ -20,7 +21,7 @@ const router = Router();
    Local Authentication
 =========================================== */
 
-router.post("/signup", signup);
+router.post("/signup", signupRateLimit, signup);
 
 router.post("/signup/verify", verifySignup);
 
