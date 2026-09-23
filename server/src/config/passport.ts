@@ -12,18 +12,23 @@ passport.use(
 
     async (_, __, profile, done) => {
       try {
-        const email = profile.emails?.[0]?.value;
-
+        const email = profile.emails?.[0]?.value
+                  ?.trim()
+                  .toLowerCase();
+                      
         if (!email) {
           return done(new Error("No email found"));
         }
 
-        let user = await prisma.user.findUnique({
+        let user = await prisma.user.findFirst({
           where: {
-            email,
+            email: {
+              equals: email,
+              mode: "insensitive",
+            },
           },
         });
-
+        
         if (!user) {
           user = await prisma.user.create({
             data: {

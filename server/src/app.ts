@@ -14,6 +14,10 @@ import invitationRoutes from "./routes/invitation.routes";
 
 const app = express();
 
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 app.use(express.json());
 
 app.use(cookieParser());
