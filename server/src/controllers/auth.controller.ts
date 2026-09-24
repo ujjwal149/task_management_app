@@ -70,6 +70,7 @@ export const verifySignup = async (
     const token = generateToken({
       userId: user.id,
       role: user.role,
+      tokenVersion: user.tokenVersion,
     });
 
     res.cookie("token", token, {
@@ -154,6 +155,7 @@ export const signin = async (
     const token = generateToken({
       userId: user.id,
       role: user.role,
+      tokenVersion: user.tokenVersion,
     });
 
     res.cookie("token", token, {
@@ -256,14 +258,33 @@ export const googleCallback = async (
 ) => {
   try {
 
-    const user = req.user as {
+    const googleUser = req.user as {
       userId: string;
       role: "ADMIN" | "USER";
     };
-
-const token = generateToken({
-  userId: user.userId,
-  role: user.role,});
+    
+    const user = await prisma.user.findUnique({
+      where: {
+        id: googleUser.userId,
+      },
+      select: {
+        id: true,
+        role: true,
+        tokenVersion: true,
+      },
+    });
+    
+    if (!user) {
+      return res.redirect(
+        `${process.env.CLIENT_URL}/signin`
+      );
+    }
+    
+    const token = generateToken({
+      userId: user.id,
+      role: user.role,
+      tokenVersion: user.tokenVersion,
+    });
 
     res.cookie("token", token, {
       httpOnly: true,

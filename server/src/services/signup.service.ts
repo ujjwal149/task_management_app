@@ -264,7 +264,7 @@ export async function verifyPendingSignup(input: VerifySignupInput) {
         },
       });
 
-      // Return instead of throwing so the attempt count is committed.
+     
       return null;
     }
 
@@ -294,6 +294,7 @@ export async function verifyPendingSignup(input: VerifySignupInput) {
         email: true,
         avatar: true,
         role: true,
+        tokenVersion: true,
       },
     });
 
