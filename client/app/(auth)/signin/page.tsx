@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useEffect,useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -160,12 +162,25 @@ export default function SignInPage() {
               
             </div>
 
+            <div className="text-right">
+              <Link
+                href="/forgot-password"
+                className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+              >
+                Forgot password?
+              </Link>
+            </div> 
+
             <Button
               type="submit"
               className="w-full  cursor-pointer "
             >
               Sign In
-            </Button>          
+            </Button>
+
+             
+
+
 
 
 
