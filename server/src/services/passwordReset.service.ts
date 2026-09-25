@@ -184,7 +184,7 @@ export async function requestPasswordReset(
   input: ForgotPasswordInput
 ) {
   const response = {
-    resetId: randomUUID(),
+    resetId: input.resetId ?? randomUUID(),
     message:
       "If this email belongs to an eligible account, a password-reset code will be sent. Check your inbox and spam folder.",
   };

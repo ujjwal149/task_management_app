@@ -51,6 +51,7 @@ export const me = async() => {
 //--------------- Forgot Password ------------------//
 export type ForgotPasswordData = {
     email: string;
+    resetId?: string;
 };
 
 export type ForgotPasswordResponse = {

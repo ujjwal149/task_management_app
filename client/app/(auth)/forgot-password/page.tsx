@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import Link from "next/link";
 import { isAxiosError } from "axios";
 import { useForm } from "react-hook-form";
@@ -44,6 +45,20 @@ export default function ForgotPasswordPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [completed, setCompleted] = useState(false);
 
+  const [requestedEmail, setRequestedEmail] = useState("");
+  const [resendSeconds, setResendSeconds] = useState(0);
+  const [isResending, setIsResending] = useState(false);
+
+  useEffect(() => {
+    if (resendSeconds <= 0) return;
+    
+    const timer = setTimeout(() => {
+      setResendSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+  
+    return () => clearTimeout(timer);
+  }, [resendSeconds]);
+
   const emailForm = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
@@ -68,6 +83,8 @@ export default function ForgotPasswordPage() {
 
     try {
       const response = await forgotPassword(data);
+      setRequestedEmail(data.email);
+      setResendSeconds(60);
 
       passwordForm.reset();
       setResetId(response.resetId);
@@ -80,7 +97,7 @@ export default function ForgotPasswordPage() {
   const onResetPassword = async (
     data: ResetPasswordFormData
   ) => {
-    if (!resetId) {
+    if (!resetId || isResending) {
       return;
     }
 
@@ -106,6 +123,54 @@ export default function ForgotPasswordPage() {
       setErrorMessage(getErrorMessage(error));
     }
   };
+
+  const onResend = async () => {
+    if (
+      !resetId ||
+      !requestedEmail ||
+      resendSeconds > 0 ||
+      isResending ||
+      passwordForm.formState.isSubmitting
+    ) {
+      return;
+    }
+
+    setErrorMessage("");
+    setMessage("");
+    setIsResending(true);
+    setResendSeconds(60);
+
+    try {
+      const response = await forgotPassword({
+        email: requestedEmail,
+        resetId,
+      });
+
+      // A changed ID means the server created a replacement request.
+      if (response.resetId !== resetId) {
+        passwordForm.resetField("otp");
+      }
+
+      setResetId(response.resetId);
+      setMessage(response.message);
+      setResendSeconds(60);
+    } catch (error: unknown) {
+      setErrorMessage(getErrorMessage(error));
+
+      if (isAxiosError(error)) {
+        const retryAfter = Number(
+          error.response?.data?.retryAfter ??
+            error.response?.headers["retry-after"]
+        );
+
+        if (Number.isFinite(retryAfter) && retryAfter > 0) {
+          setResendSeconds(Math.ceil(retryAfter));
+        }
+      }
+    } finally {
+      setIsResending(false);
+    }
+  };  
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-stone-100 px-4 py-8">
@@ -173,7 +238,7 @@ export default function ForgotPasswordPage() {
                   autoComplete="one-time-code"
                   placeholder="Six-digit code"
                   maxLength={6}
-                  disabled={passwordForm.formState.isSubmitting}
+                  disabled={passwordForm.formState.isSubmitting || isResending}
                   {...passwordForm.register("otp")}
                 />
 
@@ -197,7 +262,7 @@ export default function ForgotPasswordPage() {
                   type="password"
                   autoComplete="new-password"
                   placeholder="Enter your new password"
-                  disabled={passwordForm.formState.isSubmitting}
+                  disabled={passwordForm.formState.isSubmitting || isResending}
                   {...passwordForm.register("newPassword")}
                 />
 
@@ -221,7 +286,7 @@ export default function ForgotPasswordPage() {
                   type="password"
                   autoComplete="new-password"
                   placeholder="Enter your new password again"
-                  disabled={passwordForm.formState.isSubmitting}
+                  disabled={passwordForm.formState.isSubmitting || isResending}
                   {...passwordForm.register("confirmPassword")}
                 />
 
@@ -235,12 +300,30 @@ export default function ForgotPasswordPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={passwordForm.formState.isSubmitting}
+                disabled={passwordForm.formState.isSubmitting || isResending}
               >
                 {passwordForm.formState.isSubmitting
                   ? "Resetting password..."
                   : "Reset password"}
               </Button>
+
+              <button
+                type="button"
+                onClick={onResend}
+                disabled={
+                  resendSeconds > 0 ||
+                  isResending ||
+                  passwordForm.formState.isSubmitting
+                }
+                className="w-full text-sm font-semibold text-blue-600 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isResending
+                  ? "Requesting code..."
+                  : resendSeconds > 0
+                    ? `Resend code in ${resendSeconds}s`
+                    : "Resend code"}
+              </button>
+              
             </form>
           ) : (
             <form

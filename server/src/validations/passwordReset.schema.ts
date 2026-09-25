@@ -6,6 +6,11 @@ export const forgotPasswordSchema = z.object({
     .trim()
     .toLowerCase()
     .email("Invalid email address"),
+
+  resetId: z
+    .string()
+    .uuid("Invalid reset request")
+    .optional(),
 });
 
 export const resetPasswordSchema = z.object({
