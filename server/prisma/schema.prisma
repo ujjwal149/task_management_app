@@ -15,6 +15,11 @@ model User {
   avatar          String?
   provider        String   @default("LOCAL")
   emailVerifiedAt DateTime?
+
+  tokenVersion    Int      @default(0)
+  passwordReset   PasswordReset?
+
+  
   role            Role     @default(USER)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -39,6 +44,22 @@ model PendingSignup {
   sendCount           Int       @default(1)
   sendWindowStartedAt DateTime  @default(now())
   consumedAt          DateTime?
+
+  @@index([expiresAt])
+}
+
+model PasswordReset {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  otpHash             String
+  expiresAt           DateTime
+  attempts            Int       @default(0)
+  lastSentAt          DateTime  @default(now())
+  sendCount           Int       @default(1)
+  sendWindowStartedAt DateTime  @default(now())
+  consumedAt          DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([expiresAt])
 }

@@ -15,17 +15,46 @@ import { authMiddleware } from "../middleware/auth.middleware";
 import { adminMiddleware } from "../middleware/admin.middleware";
 import { signupRateLimit } from "../middleware/signupRateLimit.middleware";
 
+import {
+  forgotPassword,
+  confirmPasswordReset,
+} from "../controllers/passwordReset.controller";
+
+import {
+  forgotPasswordRateLimit,
+  resetPasswordRateLimit,
+} from "../middleware/passwordResetRateLimit.middleware";
+
 const router = Router();
 
-/* ===========================================
-   Local Authentication
-=========================================== */
+/* Local Authentication */
 
-router.post("/signup", signupRateLimit, signup);
+router.post(
+  "/signup",
+  signupRateLimit,
+  signup);
 
-router.post("/signup/verify", verifySignup);
+router.post(
+  "/signup/verify",
+   verifySignup
+  );
 
-router.post("/signin", signin);
+router.post(
+  "/signin",
+   signin
+  );
+
+router.post(
+  "/forgot-password",
+  forgotPasswordRateLimit,
+  forgotPassword
+);
+
+router.post(
+  "/reset-password",
+  resetPasswordRateLimit,
+  confirmPasswordReset
+);
 
 router.post(
   "/logout",
@@ -46,9 +75,7 @@ router.get(
   adminOnly
 );
 
-/* ===========================================
-   Google OAuth
-=========================================== */
+/* Google OAuth */
 
 router.get(
   "/google",

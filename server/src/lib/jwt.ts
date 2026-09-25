@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 type JwtPayload = {
   userId: string;
   role: "ADMIN" | "USER";
+  tokenVersion: number;
 };
 
 export const generateToken = (payload: JwtPayload) => {

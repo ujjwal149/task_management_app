@@ -1,45 +1,27 @@
-import {
-  WebSocketServer,
-  WebSocket,
-} from "ws";
+import { WebSocketServer, WebSocket } from "ws";
+import type { Server } from "http";
 
 import prisma from "../lib/prisma";
-
-import { Server } from "http";
-
 import { verifyToken } from "../lib/jwt";
-
 import { WS_EVENTS } from "./events";
 
+// Authenticated connections eligible to receive broadcasts.
+const userConnections = new Map<string, Set<WebSocket>>();
 
-//CONNECTION STORAGE
-const userConnections = new Map<
-  string,
-  Set<WebSocket>
->();
+// Connections waiting for the database authentication check.
+const authenticatingConnections = new Map<string, Set<WebSocket>>();
 
-// Project rooms
-const projectRooms = new Map<
-  string,
-  Set<WebSocket>
->();
+// Project subscriptions.
+const projectRooms = new Map<string, Set<WebSocket>>();
+const socketProjects = new Map<WebSocket, Set<string>>();
 
-
-// Which projects does each WebSocket belong to?
-const socketProjects = new Map<
-  WebSocket,
-  Set<string>
->();
-
-
-// USER CONNECTION CLEANUP
-const removeConnection = (
+// Remove a socket from either user connection map.
+const removeFromConnectionMap = (
+  connectionsMap: Map<string, Set<WebSocket>>,
   userId: string,
   ws: WebSocket
 ) => {
-
-  const connections =
-    userConnections.get(userId);
+  const connections = connectionsMap.get(userId);
 
   if (!connections) {
     return;
@@ -48,685 +30,357 @@ const removeConnection = (
   connections.delete(ws);
 
   if (connections.size === 0) {
-    userConnections.delete(userId);
+    connectionsMap.delete(userId);
   }
 };
 
-
-//----------JOIN PROJECT ROOM-------------//
 const joinProjectRoom = (
   projectId: string,
   ws: WebSocket
 ) => {
-
-  // Create room if it doesn't exist
-
   if (!projectRooms.has(projectId)) {
-
-    projectRooms.set(
-      projectId,
-      new Set()
-    );
-
+    projectRooms.set(projectId, new Set());
   }
 
+  projectRooms.get(projectId)!.add(ws);
 
-  // Add WebSocket to room
+  if (!socketProjects.has(ws)) {
+    socketProjects.set(ws, new Set());
+  }
 
-  projectRooms
-    .get(projectId)!
-    .add(ws);
-
-
-  console.log(
-    `🟢 WebSocket joined project room: ${projectId}`
-  );
+  socketProjects.get(ws)!.add(projectId);
 };
 
-
-//---------LEAVE PROJECT ROOM-------------//
 const leaveProjectRoom = (
   projectId: string,
   ws: WebSocket
 ) => {
+  const connections = projectRooms.get(projectId);
 
-  const connections =
-    projectRooms.get(projectId);
+  if (connections) {
+    connections.delete(ws);
 
-  if (!connections) {
-    return;
+    if (connections.size === 0) {
+      projectRooms.delete(projectId);
+    }
   }
 
+  const projects = socketProjects.get(ws);
 
-  // Remove socket from room
+  if (projects) {
+    projects.delete(projectId);
 
-  connections.delete(ws);
-
-
-  // Delete empty room
-
-  if (connections.size === 0) {
-
-    projectRooms.delete(projectId);
-
+    if (projects.size === 0) {
+      socketProjects.delete(ws);
+    }
   }
-
-
-  console.log(
-    `🔴 WebSocket left project room: ${projectId}`
-  );
 };
 
-
-// Initialize Websocket
-export const initializeWebSocket = (
-  server: Server
+// Safe to call more than once for the same socket.
+const cleanupSocket = (
+  userId: string,
+  ws: WebSocket
 ) => {
+  removeFromConnectionMap(userConnections, userId, ws);
+  removeFromConnectionMap(
+    authenticatingConnections,
+    userId,
+    ws
+  );
 
-  const wss =
-    new WebSocketServer({
-      server,
+  const projects = socketProjects.get(ws);
+
+  if (projects) {
+    for (const projectId of Array.from(projects)) {
+      leaveProjectRoom(projectId, ws);
+    }
+  }
+
+  socketProjects.delete(ws);
+};
+
+export const initializeWebSocket = (server: Server) => {
+  const wss = new WebSocketServer({ server });
+
+  console.log("WebSocket server initialized.");
+
+  wss.on("connection", async (ws, request) => {
+    let userId: string | undefined;
+
+    // Install cleanup before any asynchronous authentication work.
+    ws.on("close", () => {
+      if (userId) {
+        cleanupSocket(userId, ws);
+      }
     });
 
-
-  console.log(
-    "WebSocket server initialized."
-  );
-
-
-  // ==========================================================
-  // NEW CONNECTION
-  // ==========================================================
-
-  wss.on(
-    "connection",
-    (ws, request) => {
-
-      try {
-
-        // ====================================================
-        // GET COOKIE
-        // ====================================================
-
-        const cookieHeader =
-          request.headers.cookie;
-
-
-        if (!cookieHeader) {
-
-          console.log(
-            "❌ WebSocket rejected: No cookies"
-          );
-
-          ws.close();
-
-          return;
-        }
-
-
-        // ====================================================
-        // EXTRACT JWT
-        // ====================================================
-
-        const token =
-          cookieHeader
-            .split(";")
-            .find(
-              (cookie) =>
-                cookie
-                  .trim()
-                  .startsWith("token=")
-            )
-            ?.trim()
-            .slice("token=".length);
-
-
-        if (!token) {
-
-          console.log(
-            "❌ WebSocket rejected: No token"
-          );
-
-          ws.close();
-
-          return;
-        }
-
-
-        // ====================================================
-        // VERIFY JWT
-        // ====================================================
-
-        const decoded =
-          verifyToken(token);
-
-
-        console.log(
-          "👤 WebSocket authenticated:",
-          decoded.userId
-        );
-
-
-        console.log(
-          "🔐 User role:",
-          decoded.role
-        );
-
-
-        // ====================================================
-        // STORE USER CONNECTION
-        // ====================================================
-
-        if (
-          !userConnections.has(
-            decoded.userId
-          )
-        ) {
-
-          userConnections.set(
-            decoded.userId,
-            new Set()
-          );
-
-        }
-
-
-        userConnections
-          .get(decoded.userId)!
-          .add(ws);
-
-
-        console.log(
-          "🟢 New authenticated WebSocket client"
-        );
-
-
-        // ====================================================
-        // CONNECTION SUCCESS
-        // ====================================================
-
-        ws.send(
-          JSON.stringify({
-
-            event:
-              WS_EVENTS.CONNECTION_SUCCESS,
-
-            message:
-              "Connected to TaskFlow WebSocket server",
-
-            userId:
-              decoded.userId,
-
-          })
-        );
-
-
-        // ====================================================
-        // CLIENT MESSAGE
-        // ====================================================
-
-        ws.on(
-          "message",
-          async (message) => {
-
-            try {
-
-              const parsedMessage =
-                JSON.parse(
-                  message.toString()
-                );
-
-
-              console.log(
-                "📩 Client message:",
-                parsedMessage
-              );
-
-
-              // ==================================================
-              // JOIN PROJECT
-              // ==================================================
-
-              if (
-                parsedMessage.event ===
-                WS_EVENTS.JOIN_PROJECT
-              ) {
-
-                const {
-                  projectId,
-                } =
-                  parsedMessage.data;
-
-
-                // ----------------------------------------------
-                // Validate projectId
-                // ----------------------------------------------
-
-                if (!projectId) {
-
-                  ws.send(
-                    JSON.stringify({
-
-                      event:
-                        WS_EVENTS.JOIN_PROJECT,
-
-                      error:
-                        "projectId is required",
-
-                    })
-                  );
-
-                  return;
-                }
-
-
-                // ----------------------------------------------
-                // Check project membership
-                // ----------------------------------------------
-
-                const membership =
-                  await prisma.projectMember.findUnique({
-
-                    where: {
-
-                      userId_projectId: {
-
-                        userId:
-                          decoded.userId,
-
-                        projectId,
-
-                      },
-
-                    },
-
-                  });
-
-
-                // ----------------------------------------------
-                // User is NOT a project member
-                // ----------------------------------------------
-
-                if (!membership) {
-
-                  console.log(
-                    `❌ User ${decoded.userId} is not a member of project ${projectId}`
-                  );
-
-
-                  ws.send(
-                    JSON.stringify({
-
-                      event:
-                        WS_EVENTS.JOIN_PROJECT,
-
-                      error:
-                        "You are not a member of this project.",
-
-                    })
-                  );
-
-
-                  return;
-                }
-
-
-                // ----------------------------------------------
-                // User is authorized
-                // ----------------------------------------------
-
-                joinProjectRoom(
-                  projectId,
-                  ws
-                );
-
-
-                // ----------------------------------------------
-                // Remember projects for this socket
-                // ----------------------------------------------
-
-                if (
-                  !socketProjects.has(ws)
-                ) {
-
-                  socketProjects.set(
-                    ws,
-                    new Set()
-                  );
-
-                }
-
-
-                socketProjects
-                  .get(ws)!
-                  .add(projectId);
-
-
-                // ----------------------------------------------
-                // Tell client
-                // ----------------------------------------------
-
-                ws.send(
-                  JSON.stringify({
-
-                    event:
-                      WS_EVENTS.PROJECT_JOINED,
-
-                    projectId,
-
-                  })
-                );
-
-
-                console.log(
-                  `✅ User ${decoded.userId} joined project ${projectId}`
-                );
-
-
-                return;
-              }
-
-
-              // ==================================================
-              // LEAVE PROJECT
-              // ==================================================
-
-              if (
-                parsedMessage.event ===
-                WS_EVENTS.LEAVE_PROJECT
-              ) {
-
-                const {
-                  projectId,
-                } =
-                  parsedMessage.data;
-
-
-                if (!projectId) {
-                  return;
-                }
-
-
-                // Remove socket from room
-
-                leaveProjectRoom(
-                  projectId,
-                  ws
-                );
-
-
-                // Remove project from
-                // socket's project list
-
-                const projects =
-                  socketProjects.get(ws);
-
-
-                if (projects) {
-
-                  projects.delete(
-                    projectId
-                  );
-
-
-                  if (
-                    projects.size === 0
-                  ) {
-
-                    socketProjects.delete(
-                      ws
-                    );
-
-                  }
-
-                }
-
-
-                // Tell client
-
-                ws.send(
-                  JSON.stringify({
-
-                    event:
-                      WS_EVENTS.PROJECT_LEFT,
-
-                    projectId,
-
-                  })
-                );
-
-
-                console.log(
-                  `✅ User ${decoded.userId} left project ${projectId}`
-                );
-
-
-                return;
-              }
-
-
-              // ==================================================
-              // UNKNOWN MESSAGE
-              // ==================================================
-
-              console.log(
-                "ℹ️ Unknown WebSocket event:",
-                parsedMessage.event
-              );
-
-            } catch (error) {
-
-              console.error(
-                "❌ Invalid WebSocket message:",
-                error
-              );
-
-            }
-
-          }
-        );
-
-
-        // ====================================================
-        // DISCONNECT
-        // ====================================================
-
-        ws.on(
-          "close",
-          () => {
-
-            console.log(
-              "🔴 WebSocket client disconnected:",
-              decoded.userId
-            );
-
-
-            // ----------------------------------------------
-            // Remove from user connections
-            // ----------------------------------------------
-
-            removeConnection(
-              decoded.userId,
-              ws
-            );
-
-
-            // ----------------------------------------------
-            // Remove from all project rooms
-            // ----------------------------------------------
-
-            const projects =
-              socketProjects.get(ws);
-
-
-            if (projects) {
-
-              projects.forEach(
-                (projectId) => {
-
-                  leaveProjectRoom(
-                    projectId,
-                    ws
-                  );
-
-                }
-              );
-
-
-              socketProjects.delete(
-                ws
-              );
-
-            }
-
-          }
-        );
-
-
-        // ====================================================
-        // ERROR
-        // ====================================================
-
-        ws.on(
-          "error",
-          (error) => {
-
-            console.error(
-              "🔴 WebSocket error:",
-              error
-            );
-
-            // User connection cleanup
-            removeConnection(
-              decoded.userId,
-              ws
-            );
-
-          }
-        );
-
-      } catch (error) {
-
-        console.error(
-          "❌ WebSocket authentication failed:",
-          error
-        );
-
-
-        ws.close();
-
+    ws.on("error", () => {
+      console.error("WebSocket connection error.");
+
+      if (userId) {
+        cleanupSocket(userId, ws);
       }
 
-    }
-  );
+      ws.terminate();
+    });
 
+    try {
+      const cookieHeader = request.headers.cookie;
+
+      const token = cookieHeader
+        ?.split(";")
+        .map((cookie) => cookie.trim())
+        .find((cookie) => cookie.startsWith("token="))
+        ?.slice("token=".length);
+
+      if (!token) {
+        ws.close(1008, "Authentication required");
+        return;
+      }
+
+      const decoded = verifyToken(token);
+
+      if (
+        !decoded ||
+        typeof decoded.userId !== "string" ||
+        decoded.userId.length === 0 ||
+        !Number.isInteger(decoded.tokenVersion) ||
+        decoded.tokenVersion < 0
+      ) {
+        ws.close(1008, "Invalid session");
+        return;
+      }
+
+      userId = decoded.userId;
+
+      // Track the socket before awaiting the database.
+      // Password reset can now close it even during authentication.
+      if (!authenticatingConnections.has(userId)) {
+        authenticatingConnections.set(userId, new Set());
+      }
+
+      authenticatingConnections.get(userId)!.add(ws);
+
+      try {
+        const currentUser = await prisma.user.findUnique({
+          where: {
+            id: userId,
+          },
+          select: {
+            id: true,
+            tokenVersion: true,
+          },
+        });
+
+        if (
+          !currentUser ||
+          currentUser.tokenVersion !== decoded.tokenVersion
+        ) {
+          ws.close(1008, "Session expired");
+          return;
+        }
+
+        // A reset or client disconnect may have closed this socket
+        // while the database query was running.
+        if (ws.readyState !== WebSocket.OPEN) {
+          return;
+        }
+      } finally {
+        removeFromConnectionMap(
+          authenticatingConnections,
+          userId,
+          ws
+        );
+      }
+
+      // No await between authentication and registration.
+      if (!userConnections.has(userId)) {
+        userConnections.set(userId, new Set());
+      }
+
+      userConnections.get(userId)!.add(ws);
+
+      ws.on("message", async (message) => {
+        if (ws.readyState !== WebSocket.OPEN) {
+          return;
+        }
+
+        try {
+          const parsedMessage = JSON.parse(message.toString());
+
+          if (
+            !parsedMessage ||
+            typeof parsedMessage !== "object"
+          ) {
+            return;
+          }
+
+          // Join a project room.
+          if (
+            parsedMessage.event === WS_EVENTS.JOIN_PROJECT
+          ) {
+            const projectId = parsedMessage.data?.projectId;
+
+            if (
+              typeof projectId !== "string" ||
+              projectId.trim().length === 0
+            ) {
+              ws.send(
+                JSON.stringify({
+                  event: WS_EVENTS.JOIN_PROJECT,
+                  error: "projectId is required",
+                })
+              );
+
+              return;
+            }
+
+            const membership =
+              await prisma.projectMember.findUnique({
+                where: {
+                  userId_projectId: {
+                    userId: decoded.userId,
+                    projectId,
+                  },
+                },
+              });
+
+            // Do not rejoin rooms after a password reset closes
+            // the socket during the membership query.
+            if (ws.readyState !== WebSocket.OPEN) {
+              return;
+            }
+
+            if (!membership) {
+              ws.send(
+                JSON.stringify({
+                  event: WS_EVENTS.JOIN_PROJECT,
+                  error:
+                    "You are not a member of this project.",
+                })
+              );
+
+              return;
+            }
+
+            joinProjectRoom(projectId, ws);
+
+            ws.send(
+              JSON.stringify({
+                event: WS_EVENTS.PROJECT_JOINED,
+                projectId,
+              })
+            );
+
+            return;
+          }
+
+          // Leave a project room.
+          if (
+            parsedMessage.event === WS_EVENTS.LEAVE_PROJECT
+          ) {
+            const projectId = parsedMessage.data?.projectId;
+
+            if (
+              typeof projectId !== "string" ||
+              projectId.trim().length === 0
+            ) {
+              return;
+            }
+
+            leaveProjectRoom(projectId, ws);
+
+            ws.send(
+              JSON.stringify({
+                event: WS_EVENTS.PROJECT_LEFT,
+                projectId,
+              })
+            );
+
+            return;
+          }
+        } catch {
+          console.error("Unable to process WebSocket message.");
+        }
+      });
+
+      ws.send(
+        JSON.stringify({
+          event: WS_EVENTS.CONNECTION_SUCCESS,
+          message: "Connected to TaskFlow WebSocket server",
+          userId,
+        })
+      );
+    } catch {
+      console.error("WebSocket authentication failed.");
+
+      if (userId) {
+        cleanupSocket(userId, ws);
+      }
+
+      ws.close(1008, "Unable to authenticate session");
+    }
+  });
 
   return wss;
 };
 
+// Called after a successful password-reset transaction commits.
+export const disconnectUserSockets = (userId: string) => {
+  const connections = new Set<WebSocket>([
+    ...(userConnections.get(userId) ?? []),
+    ...(authenticatingConnections.get(userId) ?? []),
+  ]);
 
-// Brodcast
+  for (const ws of connections) {
+    // Remove access to broadcasts immediately.
+    cleanupSocket(userId, ws);
+
+    ws.close(
+      1008,
+      "Session expired. Please sign in again."
+    );
+  }
+};
+
+// Broadcast to all authenticated connections.
 export const broadcast = (
   event: string,
   data: unknown
 ) => {
+  const message = JSON.stringify({ event, data });
 
-  const message =
-    JSON.stringify({
-
-      event,
-
-      data,
-
-    });
-
-
-  userConnections.forEach(
-    (connections) => {
-
-      connections.forEach(
-        (client) => {
-
-          if (
-            client.readyState ===
-            WebSocket.OPEN
-          ) {
-
-            client.send(
-              message
-            );
-
-          }
-
-        }
-      );
-
+  for (const connections of userConnections.values()) {
+    for (const client of connections) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
     }
-  );
-
+  }
 };
 
-
-
-//-----------Send To User----------------------//
+// Send an event to one user's authenticated connections.
 export const sendToUser = (
   userId: string,
   event: string,
   data: unknown
 ) => {
-
-  const connections =
-    userConnections.get(userId);
-
+  const connections = userConnections.get(userId);
 
   if (!connections) {
-
-    console.log(
-      `⚠️ No active websocket connection for user: ${userId}`
-    );
-
     return;
   }
 
+  const message = JSON.stringify({ event, data });
 
-  const message =
-    JSON.stringify({
-
-      event,
-
-      data,
-
-    });
-
-
-  connections.forEach(
-    (client) => {
-
-      if (
-        client.readyState ===
-        WebSocket.OPEN
-      ) {
-
-        client.send(
-          message
-        );
-
-      }
-
+  for (const client of connections) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(message);
     }
-  );
-
-
-  console.log(
-    `📤 WebSocket event sent to user ${userId}: ${event}`
-  );
-
+  }
 };
 
-
-
-
-//--------------sendToProjectRoom--------------//
+// Send an event to authenticated project subscribers.
 export const sendToProjectRoom = (
   projectId: string,
   event: string,
@@ -734,27 +388,15 @@ export const sendToProjectRoom = (
 ) => {
   const connections = projectRooms.get(projectId);
 
-  // No active connections in this project room
   if (!connections) {
-    console.log(
-      `⚠️ No active WebSocket connections in project room: ${projectId}`
-    );
-
     return;
   }
 
-  const message = JSON.stringify({
-    event,
-    data,
-  });
+  const message = JSON.stringify({ event, data });
 
-  connections.forEach((client) => {
+  for (const client of connections) {
     if (client.readyState === WebSocket.OPEN) {
       client.send(message);
     }
-  });
-
-  console.log(
-    `📤 WebSocket event sent to project room ${projectId}: ${event}`
-  );
+  }
 };
